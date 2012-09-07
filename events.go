@@ -53,13 +53,13 @@ timerloop:
 }
 
 // a watcher that tries to trap sys signals so you can gracefully shutdown.  
-// Make sure to only call this once
+// Make sure to only call this once.  Currently monitors events [sigterm,
+// sigint, sigabrt,sigquit,sigstop, sigusr1,sigusr2]
 func WatchSignals(quit chan bool) {
 	var sig os.Signal
 	sigIn := make(chan os.Signal, 1)
 	signal.Notify(sigIn)
 	defer func() {
-		// ZMQ!  You and your stupid assertions
 		if r := recover(); r != nil {
 			Debug("Recovered in Watch Signals", r)
 		}
@@ -121,6 +121,7 @@ func RunEventHandlers(event string) {
 	}
 }
 
+// add a callback function for when an event happens (quit, etc)
 func RegisterEventHandler(event string, handler func()) {
 	eventsMu.Lock()
 	defer eventsMu.Unlock()

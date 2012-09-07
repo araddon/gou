@@ -79,18 +79,18 @@ func PostJson(url, body string) (ret string, err error) {
 }
 
 // posts a www-form encoded form to url with body
-func PostForm(url, body string) (ret string, err error) {
+func PostForm(url, body string) (ret string, err error, resp *http.Response) {
 	//Post(url string, bodyType string, body io.Reader) 
 	buf := bytes.NewBufferString(body)
-	resp, err := http.Post(url, "application/x-www-form-urlencoded", buf)
+	resp, err = http.Post(url, "application/x-www-form-urlencoded", buf)
 	if err != nil {
 		Log(WARN, err.Error())
-		return "", err
+		return "", err, resp
 	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", err, resp
 	}
 
-	return string(data), nil
+	return string(data), nil, resp
 }

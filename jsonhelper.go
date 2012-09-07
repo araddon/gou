@@ -1,12 +1,51 @@
 package gou
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 )
 
+func JsonString(v interface{}) string {
+	b, _ := json.Marshal(v)
+	return string(b)
+}
+
 // A simple wrapper tohelp json config files be more easily used
+// allows usage such as this
+//		
+//		jh := NewJsonHelper([]byte(`{
+//			"name":"string",
+//			"ints":[1,5,9,11],
+//			"int":1,
+//			"int64":1234567890,
+//			"MaxSize" : 1048576,
+//			"strings":["string1"],
+//			"nested":{
+//				"nest":"string2",
+//				"strings":["string1"],
+//				"int":2,
+//				"list":["value"],
+//				"nest2":{
+//					"test":"good"
+//				}
+//			},
+//			"nested2":[
+//				{"sub":5}
+//			]
+//		}`)
+//
+//		i := jh.Int("nested.int")  // 2
+//		i2 := jh.Int("ints[1]")    // 5   array position 1 from [1,5,9,11]
+//		s := jh.String("nested.nest")  // "string2"
+//
 type JsonHelper map[string]interface{}
+
+func NewJsonHelper(b []byte) JsonHelper {
+	jh := make(JsonHelper)
+	json.Unmarshal(b, &jh)
+	return jh
+}
 
 func (j JsonHelper) Helper(n string) JsonHelper {
 	if v, ok := j[n]; ok {
@@ -115,13 +154,37 @@ func (j JsonHelper) Int64(n string) int64 {
 	return -1
 }
 func (j JsonHelper) String(n string) string {
-	v := j.Get(n)
-	if v != nil {
+	if v := j.Get(n); v != nil {
 		if s, ok := v.(string); ok {
 			return s
 		}
 	}
 	return ""
+}
+func (j JsonHelper) Strings(n string) []string {
+	if v := j.Get(n); v != nil {
+		//Debug(n, " ", v)
+		switch v.(type) {
+		case []string:
+			//Debug("type []string")
+			return v.([]string)
+		case []interface{}:
+			//Debug("Kind = []interface{} n=", n, "  v=", v)
+			sva := make([]string, 0)
+			for _, av := range v.([]interface{}) {
+				switch av.(type) {
+				case string:
+					sva = append(sva, av.(string))
+				default:
+					//Debug("Kind ? ", av)
+				}
+			}
+			return sva
+		default:
+			//Debug("Kind = ?? ", n, v)
+		}
+	}
+	return nil
 }
 func (j JsonHelper) StringSafe(n string) (string, bool) {
 	v := j.Get(n)
@@ -150,8 +213,12 @@ func (j JsonHelper) Int(n string) int {
 		case float64:
 			f := v.(float64)
 			return int(f)
+		case string:
+			if iv, err := strconv.Atoi(v.(string)); err == nil {
+				return iv
+			}
 		default:
-			Debug("no type? ", n, " ", v)
+			Debug("no type int? ", n, " ", v)
 		}
 	}
 	return -1

@@ -4,6 +4,7 @@ gou
 Go Utilities (logging, json, config, event helpers)
 
 Events, for when you want sync(locked) coordination of events:
+
 	// register to recive event
 	func init() {
 		RegisterEventHandler("config_afterload", func() {
@@ -26,7 +27,7 @@ Logging, configureable command logging that can be turned up/down to show only d
 	} else {
 		gou.SetLogger(log.New(os.Stderr, "", log.LstdFlags), logLevel)
 	}
-	// easy 
+	// logging methods
 	Debug("hello", thing, " more ", stuff)
 
 	Log(ERROR, "hello")
