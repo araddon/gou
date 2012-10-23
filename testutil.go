@@ -35,6 +35,15 @@ func Assert(is bool, t *testing.T, format string, args ...interface{}) {
 	}
 }
 
+// take two floats, compare, need to be within .1%
+func CloseEnuf(a, b float64) bool {
+	c := a / b
+	if c > .999 && c < 1.001 {
+		return true
+	}
+	return false
+}
+
 func StopCheck() {
 	t := time.Now()
 	if lastTest.Add(time.Second*1).UnixNano() < t.UnixNano() {
@@ -48,6 +57,11 @@ func StopCheck() {
 // Simple Fetch Wrapper, given a url it returns bytes
 func Fetch(url string) (ret []byte, err error) {
 	resp, err := http.Get(url)
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
 	if err != nil {
 		Log(WARN, err.Error())
 		return
@@ -61,21 +75,26 @@ func Fetch(url string) (ret []byte, err error) {
 
 // posts an application/json to url with body
 // ie:   type = application/json
-func PostJson(url, body string) (ret string, err error) {
+func PostJson(url, body string) (ret string, err error, resp *http.Response) {
 	//Post(url string, bodyType string, body io.Reader) 
 	Debug(url)
 	buf := bytes.NewBufferString(body)
-	resp, err := http.Post(url, "application/json", buf)
+	resp, err = http.Post(url, "application/json", buf)
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
 	if err != nil {
 		Log(WARN, err.Error())
-		return "", err
+		return "", err, resp
 	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", err, resp
 	}
 
-	return string(data), nil
+	return string(data), nil, resp
 }
 
 // posts a www-form encoded form to url with body
@@ -83,8 +102,13 @@ func PostForm(url, body string) (ret string, err error, resp *http.Response) {
 	//Post(url string, bodyType string, body io.Reader) 
 	buf := bytes.NewBufferString(body)
 	resp, err = http.Post(url, "application/x-www-form-urlencoded", buf)
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
 	if err != nil {
-		Log(WARN, err.Error())
+		Log(WARN, url, body, err.Error())
 		return "", err, resp
 	}
 	data, err := ioutil.ReadAll(resp.Body)

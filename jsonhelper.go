@@ -2,6 +2,7 @@ package gou
 
 import (
 	"encoding/json"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -62,8 +63,11 @@ func (j JsonHelper) Helper(n string) JsonHelper {
 				cn[n] = val
 			}
 			return cn
+		case JsonHelper:
+			return v.(JsonHelper)
 		default:
-			Debug("no map? ", v)
+			rv := reflect.ValueOf(v)
+			Debug("no map? ", v, rv.String(), rv.Type())
 		}
 	}
 	return nil
@@ -180,6 +184,38 @@ func (j JsonHelper) Strings(n string) []string {
 				}
 			}
 			return sva
+		default:
+			//Debug("Kind = ?? ", n, v)
+		}
+	}
+	return nil
+}
+func (j JsonHelper) Ints(n string) []int {
+	if v := j.Get(n); v != nil {
+		//Debug(n, " ", v)
+		switch v.(type) {
+		case []interface{}:
+			//Debug("Kind = []interface{} n=", n, "  v=", v)
+			iva := make([]int, 0)
+			for _, av := range v.([]interface{}) {
+				switch av.(type) {
+				case int:
+					iva = append(iva, av.(int))
+				case int64:
+					iva = append(iva, int(av.(int64)))
+				case uint32:
+					iva = append(iva, int(av.(uint32)))
+				case float32:
+					f := float64(av.(float32))
+					iva = append(iva, int(f))
+				case float64:
+					f := av.(float64)
+					iva = append(iva, int(f))
+				default:
+					//Debug("Kind ? ", av)
+				}
+			}
+			return iva
 		default:
 			//Debug("Kind = ?? ", n, v)
 		}

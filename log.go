@@ -16,6 +16,7 @@ const (
 )
 
 /*
+https://github.com/mewkiz/pkg/tree/master/term
 RED = '\033[0;1;31m'
 GREEN = '\033[0;1;32m'
 YELLOW = '\033[0;1;33m'

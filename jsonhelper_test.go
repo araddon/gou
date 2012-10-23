@@ -43,6 +43,7 @@ func TestUtilJsonHelper(t *testing.T) {
 	Assert(jh.Int("notint") == -1, t, "get non existent int = 0??? ")
 	Assert(jh.Int("ints[0]") == 1, t, "get int from array %d", jh.Int("ints[0]"))
 	Assert(jh.Int("ints[2]") == 3, t, "get int from array %d", jh.Int("ints[0]"))
+	Assert(len(jh.Ints("ints")) == 4, t, "get int array %v", jh.Ints("ints"))
 	Assert(jh.Int64("int64") == 1234567890, t, "get int")
 	Assert(jh.Int("nested.int") == 2, t, "get int")
 	Assert(jh.String("nested.nest") == "string2", t, "should get string %s", jh.String("nested.nest"))
