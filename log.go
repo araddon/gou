@@ -82,6 +82,7 @@ func Debug(v ...interface{}) {
 	}
 }
 
+// 
 func Debugf(format string, v ...interface{}) {
 	if LogLevel >= 4 {
 		DoLog(3, DEBUG, fmt.Sprintf(format, v...), logger)
