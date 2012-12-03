@@ -159,8 +159,25 @@ func (j JsonHelper) Int64(n string) int64 {
 }
 func (j JsonHelper) String(n string) string {
 	if v := j.Get(n); v != nil {
-		if s, ok := v.(string); ok {
-			return s
+		switch v.(type) {
+		case string:
+			return v.(string)
+		case int:
+			return strconv.Itoa(v.(int))
+		case int32:
+			return strconv.FormatInt(int64(v.(int32)), 10)
+		case int64:
+			return strconv.FormatInt(v.(int64), 10)
+		case uint32:
+			return strconv.FormatUint(uint64(v.(uint32)), 10)
+		case uint64:
+			return strconv.FormatUint(v.(uint64), 10)
+		case float64:
+			//(v.(float64), 10)
+			return strconv.FormatInt(int64(v.(float64)), 10)
+		default:
+			to := reflect.TypeOf(v)
+			Debug("not string type? ", n, " ", v, " ", to.String())
 		}
 	}
 	return ""

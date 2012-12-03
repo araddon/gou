@@ -59,11 +59,13 @@ func WatchSignals(quit chan bool) {
 	var sig os.Signal
 	sigIn := make(chan os.Signal, 1)
 	signal.Notify(sigIn)
+
 	defer func() {
 		if r := recover(); r != nil {
 			Debug("Recovered in Watch Signals", r)
 		}
 	}()
+
 	for {
 		sig = <-sigIn
 		if sig.(os.Signal) == syscall.SIGTERM {
@@ -113,7 +115,7 @@ func RunEventHandlers(event string) {
 	eventsMu.Lock()
 	defer eventsMu.Unlock()
 	events, ok := eventHandlers[event]
-	Debug("running event handlers ", event, len(events), ok)
+	//Debug("running event handlers ", event, len(events), ok)
 	if ok {
 		for _, handler := range events {
 			handler()
