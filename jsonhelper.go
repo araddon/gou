@@ -186,6 +186,8 @@ func (j JsonHelper) Strings(n string) []string {
 	if v := j.Get(n); v != nil {
 		//Debug(n, " ", v)
 		switch v.(type) {
+		case string:
+			return strings.Split(v.(string), ",")
 		case []string:
 			//Debug("type []string")
 			return v.([]string)

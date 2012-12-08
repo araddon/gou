@@ -24,6 +24,7 @@ func TestUtilJsonHelper(t *testing.T) {
 		"int64":1234567890,
 		"MaxSize" : 1048576,
 		"strings":["string1"],
+		"stringscsv":"string1,string2",
 		"nested":{
 			"nest":"string2",
 			"strings":["string1"],
@@ -55,4 +56,6 @@ func TestUtilJsonHelper(t *testing.T) {
 	Assert(jh.Int("MaxSize") == 1048576, t, "get int, test capitalization? ")
 	sl := jh.Strings("strings")
 	Assert(len(sl) == 1 && sl[0] == "string1", t, "get strings ")
+	sl = jh.Strings("stringscsv")
+	Assert(len(sl) == 2 && sl[0] == "string1", t, "get strings ")
 }
