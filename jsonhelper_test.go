@@ -58,4 +58,12 @@ func TestUtilJsonHelper(t *testing.T) {
 	Assert(len(sl) == 1 && sl[0] == "string1", t, "get strings ")
 	sl = jh.Strings("stringscsv")
 	Assert(len(sl) == 2 && sl[0] == "string1", t, "get strings ")
+
+	i64, ok := jh.Int64Safe("int64")
+	Assert(ok, t, "int64safe ok")
+	Assert(i64 == 1234567890, t, "int64safe value")
+
+	i, ok := jh.IntSafe("int")
+	Assert(ok, t, "intsafe ok")
+	Assert(i == 1, t, "intsafe value")
 }
