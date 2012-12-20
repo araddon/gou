@@ -2,6 +2,7 @@ package gou
 
 import (
 	"encoding/json"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -47,7 +48,6 @@ func NewJsonHelper(b []byte) JsonHelper {
 	json.Unmarshal(b, &jh)
 	return jh
 }
-
 func (j JsonHelper) Helper(n string) JsonHelper {
 	if v, ok := j[n]; ok {
 		switch v.(type) {
@@ -132,30 +132,12 @@ func (j JsonHelper) Get(n string) interface{} {
 	}
 	return root
 }
-
 func (j JsonHelper) Int64(n string) int64 {
-	v := j.Get(n)
-	if v != nil {
-		switch v.(type) {
-		case int:
-			return int64(v.(int))
-		case int64:
-			return int64(v.(int64))
-		case uint32:
-			return int64(v.(uint32))
-		case uint64:
-			return int64(v.(uint64))
-		case float32:
-			f := float64(v.(float32))
-			return int64(f)
-		case float64:
-			f := v.(float64)
-			return int64(f)
-		default:
-			Debug("no type? ", n, " ", v)
-		}
+	i64, ok := j.Int64Safe(n)
+	if !ok {
+		return -1
 	}
-	return -1
+	return i64
 }
 func (j JsonHelper) String(n string) string {
 	if v := j.Get(n); v != nil {
@@ -210,34 +192,19 @@ func (j JsonHelper) Strings(n string) []string {
 	return nil
 }
 func (j JsonHelper) Ints(n string) []int {
-	if v := j.Get(n); v != nil {
-		//Debug(n, " ", v)
-		switch v.(type) {
-		case []interface{}:
-			//Debug("Kind = []interface{} n=", n, "  v=", v)
-			iva := make([]int, 0)
-			for _, av := range v.([]interface{}) {
-				switch av.(type) {
-				case int:
-					iva = append(iva, av.(int))
-				case int64:
-					iva = append(iva, int(av.(int64)))
-				case uint32:
-					iva = append(iva, int(av.(uint32)))
-				case float32:
-					f := float64(av.(float32))
-					iva = append(iva, int(f))
-				case float64:
-					f := av.(float64)
-					iva = append(iva, int(f))
-				default:
-					//Debug("Kind ? ", av)
-				}
+	v := j.Get(n)
+	if v == nil {
+		return nil
+	}
+	if sl, isSlice := v.([]interface{}); isSlice {
+		iva := make([]int, 0)
+		for _, av := range sl {
+			avAsInt, ok := numToInt(av)
+			if ok {
+				iva = append(iva, avAsInt)
 			}
-			return iva
-		default:
-			//Debug("Kind = ?? ", n, v)
 		}
+		return iva
 	}
 	return nil
 }
@@ -251,32 +218,64 @@ func (j JsonHelper) StringSafe(n string) (string, bool) {
 	return "", false
 }
 func (j JsonHelper) Int(n string) int {
-	v := j.Get(n)
-	if v != nil {
-		switch v.(type) {
-		case int:
-			return v.(int)
-		case int64:
-			return int(v.(int64))
-		case uint32:
-			return int(v.(uint32))
-		case uint64:
-			return int(v.(uint64))
-		case float32:
-			f := float64(v.(float32))
-			return int(f)
-		case float64:
-			f := v.(float64)
-			return int(f)
-		case string:
-			if iv, err := strconv.Atoi(v.(string)); err == nil {
-				return iv
-			}
-		default:
-			Debug("no type int? ", n, " ", v)
-		}
+	i, ok := j.IntSafe(n)
+	if !ok {
+		return -1
 	}
-	return -1
+	return i
+}
+func (j JsonHelper) Int64Safe(n string) (int64, bool) {
+	v := j.Get(n)
+	return numToInt64(v)
+
+}
+func (j JsonHelper) IntSafe(n string) (int, bool) {
+	v := j.Get(n)
+	return numToInt(v)
+}
+
+// Given any numeric type (float*, int*, uint*) return an int. Returns false if it would
+// overflow or if the the argument is not numeric.
+func numToInt(i interface{}) (int, bool) {
+	i64, ok := numToInt64(i)
+	if !ok {
+		return -1, false
+	}
+	if i64 > MaxInt || i64 < MinInt {
+		return -1, false
+	}
+	return int(i64), true
+}
+
+// Given any numeric type (float*, int*, uint*) return an int64. Returns false if it would
+// overflow or if the the argument is not numeric.
+func numToInt64(i interface{}) (int64, bool) {
+	switch x := i.(type) {
+	case float32:
+		return int64(x), true
+	case float64:
+		return int64(x), true
+	case uint8:
+		return int64(x), true
+	case uint16:
+		return int64(x), true
+	case uint32:
+		return int64(x), true
+	case uint64:
+		if x > math.MaxInt64 {
+			return 0, false
+		}
+		return int64(x), true
+	case int8:
+		return int64(x), true
+	case int16:
+		return int64(x), true
+	case int32:
+		return int64(x), true
+	case int64:
+		return int64(x), true
+	}
+	return 0, false
 }
 func (j JsonHelper) Uint64(n string) uint64 {
 	v := j.Get(n)
@@ -320,3 +319,19 @@ func (j JsonHelper) Bool(n string) bool {
 	}
 	return false
 }
+
+// The following consts are from http://code.google.com/p/go-bit/ (Apache licensed). It 
+// lets us figure out how wide go ints are, and determine their max and min values.
+
+// Note the use of << to create an untyped constant.
+const bitsPerWord = 32 << uint(^uint(0)>>63)
+
+// Implementation-specific size of int and uint in bits.
+const BitsPerWord = bitsPerWord // either 32 or 64
+
+// Implementation-specific integer limit values.
+const (
+	MaxInt  = 1<<(BitsPerWord-1) - 1 // either 1<<31 - 1 or 1<<63 - 1
+	MinInt  = -MaxInt - 1            // either -1 << 31 or -1 << 63
+	MaxUint = 1<<BitsPerWord - 1     // either 1<<32 - 1 or 1<<64 - 1
+)
