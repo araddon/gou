@@ -76,11 +76,29 @@ func Fetch(url string) (ret []byte, err error) {
 	return
 }
 
+// Simple Fetch Wrapper, given a url it returns bytes and response
+func FetchResp(url string) (ret []byte, err error, resp *http.Response) {
+	resp, err = http.Get(url)
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
+	if err != nil {
+		Log(WARN, err.Error())
+		return
+	}
+	ret, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	return
+}
+
 // posts an application/json to url with body
 // ie:   type = application/json
 func PostJson(url, body string) (ret string, err error, resp *http.Response) {
 	//Post(url string, bodyType string, body io.Reader) 
-	Debug(url)
 	buf := bytes.NewBufferString(body)
 	resp, err = http.Post(url, "application/json", buf)
 	defer func() {
@@ -141,7 +159,7 @@ func PostForm(url, body string) (ret string, err error, resp *http.Response) {
 		}
 	}()
 	if err != nil {
-		Log(WARN, url, body, err.Error())
+		Log(WARN, url, "  ", body, "    ", err.Error())
 		return "", err, resp
 	}
 	data, err := ioutil.ReadAll(resp.Body)
