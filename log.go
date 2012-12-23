@@ -36,10 +36,12 @@ LogColor         = map[int]string{FATAL: "\033[0m\033[37m",
 */
 
 var (
-	LogLevel  int = ERROR
-	logger    *log.Logger
-	logPrefix string = ""
-	LogColor         = map[int]string{FATAL: "\033[0m\033[37m",
+	LogLevel    int = ERROR
+	ErrLogLevel int = ERROR
+	logger      *log.Logger
+	loggerErr   *log.Logger
+	logPrefix   string = ""
+	LogColor           = map[int]string{FATAL: "\033[0m\033[37m",
 		ERROR: "\033[0m\033[31m",
 		WARN:  "\033[0m\033[33m",
 		INFO:  "\033[0m\033[35m",
@@ -51,14 +53,32 @@ var (
 
 // you can set a logger, and log level,most common usage is:
 //
-//	gou.SetLogger(log.New(os.Stderr, "", log.LstdFlags), "debug")
+//	gou.SetLogger(log.New(os.Stdout, "", log.LstdFlags), "debug")
 //
 //  loglevls:   debug, info, warn, error, fatal
+// Note, that you can also set a seperate Error Log Level
 func SetLogger(l *log.Logger, logLevel string) {
 	logger = l
 	LogLevelSet(logLevel)
 }
 func GetLogger() *log.Logger {
+	return logger
+}
+
+// you can set a logger, and log level.  this is for errors, and assumes
+// you are logging to Stderr (seperate from stdout above), allowing you to seperate
+// debug&info logging from errors
+//
+//	gou.SetLogger(log.New(os.Stderr, "", log.LstdFlags), "debug")
+//
+//  loglevls:   debug, info, warn, error, fatal
+func SetErrLogger(l *log.Logger, logLevel string) {
+	loggerErr = l
+	if lvl, ok := LogLevelWords[logLevel]; ok {
+		ErrLogLevel = lvl
+	}
+}
+func GetErrLogger() *log.Logger {
 	return logger
 }
 
@@ -76,16 +96,15 @@ func LogLevelSet(levelWord string) {
 
 // Log at debug level
 func Debug(v ...interface{}) {
-	if logger != nil && LogLevel >= 4 {
-		//logger.Output(2, fmt.Sprintln(v...))
-		DoLog(3, DEBUG, fmt.Sprint(v...), logger)
+	if LogLevel >= 4 {
+		DoLog(3, DEBUG, fmt.Sprint(v...))
 	}
 }
 
 // 
 func Debugf(format string, v ...interface{}) {
 	if LogLevel >= 4 {
-		DoLog(3, DEBUG, fmt.Sprintf(format, v...), logger)
+		DoLog(3, DEBUG, fmt.Sprintf(format, v...))
 	}
 }
 
@@ -93,16 +112,7 @@ func Debugf(format string, v ...interface{}) {
 //    Log(ERROR, "message")
 func Log(logLvl int, v ...interface{}) {
 	if LogLevel >= logLvl {
-		DoLog(3, logLvl, fmt.Sprint(v...), logger)
-	}
-}
-
-// Log to logger if setup
-//    LogP(ERROR, "prefix", "message", anyItems, youWant)
-func LogP(logLvl int, prefix string, v ...interface{}) {
-	if LogLevel >= logLvl && logger != nil {
-		//DoLog(3, logLvl, fmt.Sprint(v...), logger)
-		logger.Output(3, prefix+LogColor[logLvl]+fmt.Sprint(v...)+"\033[0m")
+		DoLog(3, logLvl, fmt.Sprint(v...))
 	}
 }
 
@@ -110,15 +120,26 @@ func LogP(logLvl int, prefix string, v ...interface{}) {
 //    Logf(ERROR, "message %d", 20)
 func Logf(logLvl int, format string, v ...interface{}) {
 	if LogLevel >= logLvl {
-		DoLog(3, logLvl, fmt.Sprintf(format, v...), logger)
+		DoLog(3, logLvl, fmt.Sprintf(format, v...))
+	}
+}
+
+// Log to logger if setup
+//    LogP(ERROR, "prefix", "message", anyItems, youWant)
+func LogP(logLvl int, prefix string, v ...interface{}) {
+	if ErrLogLevel >= logLvl && loggerErr != nil {
+		loggerErr.Output(3, prefix+LogColor[logLvl]+fmt.Sprint(v...)+"\033[0m")
+	} else if LogLevel >= logLvl && logger != nil {
+		logger.Output(3, prefix+LogColor[logLvl]+fmt.Sprint(v...)+"\033[0m")
 	}
 }
 
 // Log to logger if setup
 //    LogPf(ERROR, "prefix", "formatString %s %v", anyItems, youWant)
 func LogPf(logLvl int, prefix string, format string, v ...interface{}) {
-	if LogLevel >= logLvl && logger != nil {
-		//DoLog(3, logLvl, fmt.Sprint(v...), logger)
+	if ErrLogLevel >= logLvl && loggerErr != nil {
+		loggerErr.Output(3, prefix+LogColor[logLvl]+fmt.Sprintf(format, v...)+"\033[0m")
+	} else if LogLevel >= logLvl && logger != nil {
 		logger.Output(3, prefix+LogColor[logLvl]+fmt.Sprintf(format, v...)+"\033[0m")
 	}
 }
@@ -132,13 +153,15 @@ func LogPf(logLvl int, prefix string, format string, v ...interface{}) {
 //     LogD(5, DEBUG, v...)
 func LogD(depth int, logLvl int, v ...interface{}) {
 	if LogLevel >= logLvl {
-		DoLog(depth, logLvl, fmt.Sprint(v...), logger)
+		DoLog(depth, logLvl, fmt.Sprint(v...))
 	}
 }
 
 // Low level log with depth , level, message and logger
-func DoLog(depth, logLvl int, msg string, lgr *log.Logger) {
-	if lgr != nil {
-		lgr.Output(depth, logPrefix+LogColor[logLvl]+msg+"\033[0m")
+func DoLog(depth, logLvl int, msg string) {
+	if ErrLogLevel >= logLvl && loggerErr != nil {
+		loggerErr.Output(3, LogColor[logLvl]+msg+"\033[0m")
+	} else if LogLevel >= logLvl && logger != nil {
+		logger.Output(3, LogColor[logLvl]+msg+"\033[0m")
 	}
 }

@@ -29,8 +29,9 @@ func Assert(is bool, t *testing.T, format string, args ...interface{}) {
 	if is == false {
 		if logger == nil {
 			logger = log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
+			SetErrLogger(logger, "error")
 		}
-		DoLog(3, ERROR, fmt.Sprintf(format, args...), logger)
+		DoLog(3, ERROR, fmt.Sprintf(format, args...))
 		t.Fail()
 	}
 }
