@@ -327,6 +327,18 @@ func (j JsonHelper) Bool(n string) bool {
 	return false
 }
 
+func (j JsonHelper) MapSafe(n string) (map[string]interface{}, bool) {
+	v := j.Get(n)
+	if v == nil {
+		return nil, false
+	}
+	m, ok := v.(map[string]interface{})
+	if !ok {
+		return nil, false
+	}
+	return m, true
+}
+
 // The following consts are from http://code.google.com/p/go-bit/ (Apache licensed). It 
 // lets us figure out how wide go ints are, and determine their max and min values.
 
