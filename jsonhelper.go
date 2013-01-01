@@ -132,6 +132,13 @@ func (j JsonHelper) Get(n string) interface{} {
 	}
 	return root
 }
+func (j JsonHelper) List(n string) []interface{} {
+	v := j.Get(n)
+	if l, ok := v.([]interface{}); ok {
+		return l
+	}
+	return nil
+}
 func (j JsonHelper) Int64(n string) int64 {
 	i64, ok := j.Int64Safe(n)
 	if !ok {
