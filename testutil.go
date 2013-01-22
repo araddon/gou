@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	finished chan bool
+	//finished chan bool
 	lastTest time.Time = time.Now()
 	stopper  func()    = func() {}
 )
@@ -50,11 +50,11 @@ func StartTest() {
 
 func StopCheck() {
 	t := time.Now()
-	if lastTest.Add(time.Second*1).UnixNano() < t.UnixNano() {
-		Log(INFO, "Stopping Test")
-		finished <- true
+	if lastTest.Add(time.Millisecond*1000).UnixNano() < t.UnixNano() {
+		Log(INFO, "Stopping Test ", lastTest.Unix())
+		//finished <- true
 		stopper()
-		os.Exit(1)
+		os.Exit(0)
 	}
 }
 
@@ -120,16 +120,16 @@ func PostJson(url, body string) (ret string, err error, resp *http.Response) {
 }
 
 // issues http delete an application/json to url with body
-// ie:   type = application/json
 func DeleteJson(url, body string) (ret string, err error, resp *http.Response) {
 	//Post(url string, bodyType string, body io.Reader) 
-	Debug(url)
 	buf := bytes.NewBufferString(body)
+	Debug(buf.Len())
 	req, err := http.NewRequest("DELETE", url, buf)
 	if err != nil {
+		Debug(err)
 		return
 	}
-	//
+
 	req.Header.Add("Content-Type", "application/json")
 	resp, err = http.DefaultClient.Do(req) //(url, "application/json", buf)
 	defer func() {
@@ -161,6 +161,33 @@ func PostForm(url, body string) (ret string, err error, resp *http.Response) {
 	}()
 	if err != nil {
 		Log(WARN, url, "  ", body, "    ", err.Error())
+		return "", err, resp
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err, resp
+	}
+
+	return string(data), nil, resp
+}
+
+// issues http put an application/json to url with optional body
+func PutJson(url, body string) (ret string, err error, resp *http.Response) {
+	buf := bytes.NewBufferString(body)
+	req, err := http.NewRequest("PUT", url, buf)
+	if err != nil {
+		Debug(err)
+		return
+	}
+	req.Header.Add("Content-Type", "application/json")
+	resp, err = http.DefaultClient.Do(req)
+	defer func() {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}()
+	if err != nil {
+		Log(WARN, err.Error())
 		return "", err, resp
 	}
 	data, err := ioutil.ReadAll(resp.Body)
