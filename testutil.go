@@ -87,12 +87,11 @@ func FetchResp(url string) (ret []byte, err error, resp *http.Response) {
 	}()
 	if err != nil {
 		Log(WARN, err.Error())
+	}
+	if resp == nil || resp.Body == nil {
 		return
 	}
 	ret, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
 	return
 }
 
