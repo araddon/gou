@@ -132,6 +132,37 @@ func (j JsonHelper) Get(n string) interface{} {
 	}
 	return root
 }
+
+// Get list of Helpers at given name
+func (j JsonHelper) Helpers(n string) []JsonHelper {
+	v := j.Get(n)
+	if v == nil {
+		return nil
+	}
+	switch v.(type) {
+	case []map[string]interface{}:
+		hl := make([]JsonHelper, 0)
+		for _, val := range v.([]map[string]interface{}) {
+			hl = append(hl, val)
+		}
+		return hl
+	case []interface{}:
+		if l, ok := v.([]interface{}); ok {
+			jhl := make([]JsonHelper, 0)
+			for _, item := range l {
+				println(item)
+				if jh, ok := item.(map[string]interface{}); ok {
+					jhl = append(jhl, jh)
+				} else {
+					Debug(jh)
+				}
+			}
+			return jhl
+		}
+	}
+
+	return nil
+}
 func (j JsonHelper) List(n string) []interface{} {
 	v := j.Get(n)
 	if l, ok := v.([]interface{}); ok {

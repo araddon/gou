@@ -12,12 +12,13 @@ import (
 )
 
 const (
-	//2009-11-10 23:00:00 +0000 UTC
-	goEpoch = uint32(1257894000)
+	//2013-2-3 
+	ourEpoch = uint32(1359931242)
 )
 
 func init() {
 	initHostPidId()
+
 }
 
 /*
@@ -63,7 +64,7 @@ type Uid uint64
 
 func NewUid() uint64 {
 	b := make([]byte, 8)
-	ts := uint32(time.Now().Unix()) - goEpoch
+	ts := uint32(time.Now().Unix()) - ourEpoch
 
 	// Timestamp, 4 bytes, big endian
 	binary.BigEndian.PutUint32(b, ts)

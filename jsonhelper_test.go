@@ -66,4 +66,11 @@ func TestUtilJsonHelper(t *testing.T) {
 	i, ok := jh.IntSafe("int")
 	Assert(ok, t, "intsafe ok")
 	Assert(i == 1, t, "intsafe value")
+
+	l := jh.List("nested2")
+	Assert(len(l) == 1, t, "get list")
+
+	jhm := jh.Helpers("nested2")
+	Assert(len(jhm) == 1, t, "get list of helpers")
+	Assert(jhm[0].Int("sub") == 2, t, "Should get list of helpers")
 }
