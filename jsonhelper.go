@@ -1,12 +1,22 @@
 package gou
 
 import (
+	"bytes"
 	"encoding/json"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
 )
+
+// turn a non-list into json byte list
+func makeJsonList(b []byte) []byte {
+	if !bytes.HasPrefix(b, []byte{'['}) {
+		b = append([]byte{'['}, b...)
+		b = append(b, ']')
+	}
+	return b
+}
 
 func JsonString(v interface{}) string {
 	b, _ := json.Marshal(v)
@@ -47,6 +57,11 @@ func NewJsonHelper(b []byte) JsonHelper {
 	jh := make(JsonHelper)
 	json.Unmarshal(b, &jh)
 	return jh
+}
+func NewJsonHelpers(b []byte) []JsonHelper {
+	var jhl []JsonHelper
+	json.Unmarshal(makeJsonList(b), &jhl)
+	return jhl
 }
 func (j JsonHelper) Helper(n string) JsonHelper {
 	if v, ok := j[n]; ok {
