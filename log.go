@@ -3,7 +3,6 @@ package gou
 import (
 	"fmt"
 	"log"
-	"sync"
 )
 
 const (
@@ -46,9 +45,7 @@ var (
 		WARN:  "\033[0m\033[33m",
 		INFO:  "\033[0m\033[35m",
 		DEBUG: "\033[0m\033[34m"}
-	LogLevelWords map[string]int      = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
-	eventHandlers map[string][]func() = make(map[string][]func())
-	eventsMu      *sync.Mutex         = new(sync.Mutex)
+	LogLevelWords map[string]int = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
 )
 
 // you can set a logger, and log level,most common usage is:

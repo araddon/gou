@@ -22,8 +22,14 @@ package gou
 import (
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
+)
+
+var (
+	eventHandlers map[string][]func() = make(map[string][]func())
+	eventsMu      *sync.Mutex         = new(sync.Mutex)
 )
 
 // Wait for condition (defined by func) to be true
@@ -38,15 +44,14 @@ import (
 func WaitFor(check func() bool, timeoutSecs int) {
 	timer := time.NewTicker(100 * time.Millisecond)
 	tryct := 0
-timerloop:
 	for _ = range timer.C {
 		if check() {
 			timer.Stop()
-			break timerloop
+			break
 		}
 		if tryct >= timeoutSecs*10 {
 			timer.Stop()
-			break timerloop
+			break
 		}
 		tryct++
 	}

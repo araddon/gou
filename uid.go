@@ -18,12 +18,17 @@ const (
 
 func init() {
 	initHostPidId()
-
 }
 
 /*
-Special thanks to ideas from Mgo, and Noeqd
+Special thanks to ideas from Mgo, and Noeqd, this is somewhat inbetween them
 https://github.com/bmizerany/noeqd
+
+It is a roughly sortable UID, but uses machine specific info (host, processid)
+as part of the uid so each machine *will* have unique id's
+
+The host+processid is 2 bytes (65536 combinations)
+
 */
 
 // uidCounter is an atomically incremented each time we created
@@ -33,7 +38,8 @@ var uidCounter uint32 = 0
 // hostPidId stores the generated hostPid
 var hostPidId []byte
 
-// initHostPidId generates a machine-process specific id
+// initHostPidId generates a machine-process specific id by using hostname
+// and processid
 func initHostPidId() {
 	var sum [4]byte
 	hostB := sum[:]
@@ -62,6 +68,7 @@ func initHostPidId() {
 // uid is a 64 bit int uid
 type Uid uint64
 
+// Create a new uint64 unique id
 func NewUid() uint64 {
 	b := make([]byte, 8)
 	ts := uint32(time.Now().Unix()) - ourEpoch
@@ -69,12 +76,13 @@ func NewUid() uint64 {
 	// Timestamp, 4 bytes, big endian
 	binary.BigEndian.PutUint32(b, ts)
 	//Debugf("ts=%v   b=%v", ts, b)
-	// first 2 bytes of host/pid
+	// first 3 bytes of host/pid
 	b[4] = hostPidId[2]
 	b[5] = hostPidId[3]
+	b[6] = hostPidId[3]
 	// Increment, 2 bytes, big endian
 	i := atomic.AddUint32(&uidCounter, 1)
-	b[6] = byte(i >> 8)
+	//b[6] = byte(i >> 8)
 	b[7] = byte(i)
 	ui := binary.BigEndian.Uint64(b)
 	//Debugf("ui=%d  b=%v ", ui, b)
