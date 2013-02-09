@@ -252,7 +252,7 @@ func (j JsonHelper) Ints(n string) []int {
 	if sl, isSlice := v.([]interface{}); isSlice {
 		iva := make([]int, 0)
 		for _, av := range sl {
-			avAsInt, ok := numToInt(av)
+			avAsInt, ok := valToInt(av)
 			if ok {
 				iva = append(iva, avAsInt)
 			}
@@ -279,18 +279,18 @@ func (j JsonHelper) Int(n string) int {
 }
 func (j JsonHelper) Int64Safe(n string) (int64, bool) {
 	v := j.Get(n)
-	return numToInt64(v)
+	return valToInt64(v)
 
 }
 func (j JsonHelper) IntSafe(n string) (int, bool) {
 	v := j.Get(n)
-	return numToInt(v)
+	return valToInt(v)
 }
 
-// Given any numeric type (float*, int*, uint*) return an int. Returns false if it would
+// Given any numeric type (float*, int*, uint*, string) return an int. Returns false if it would
 // overflow or if the the argument is not numeric.
-func numToInt(i interface{}) (int, bool) {
-	i64, ok := numToInt64(i)
+func valToInt(i interface{}) (int, bool) {
+	i64, ok := valToInt64(i)
 	if !ok {
 		return -1, false
 	}
@@ -300,9 +300,9 @@ func numToInt(i interface{}) (int, bool) {
 	return int(i64), true
 }
 
-// Given any numeric type (float*, int*, uint*) return an int64. Returns false if it would
+// Given any simple type (float*, int*, uint*, string) return an int64. Returns false if it would
 // overflow or if the the argument is not numeric.
-func numToInt64(i interface{}) (int64, bool) {
+func valToInt64(i interface{}) (int64, bool) {
 	switch x := i.(type) {
 	case float32:
 		return int64(x), true
@@ -334,6 +334,12 @@ func numToInt64(i interface{}) (int64, bool) {
 			return 0, false
 		}
 		return int64(x), true
+	case string:
+		if len(x) > 0 {
+			if iv, err := strconv.ParseInt(x, 10, 64); err == nil {
+				return iv, true
+			}
+		}
 	}
 	return 0, false
 }

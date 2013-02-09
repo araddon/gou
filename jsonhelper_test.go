@@ -21,6 +21,7 @@ func TestUtilJsonHelper(t *testing.T) {
 		"name":"aaron",
 		"ints":[1,2,3,4],
 		"int":1,
+		"intstr":"1",
 		"int64":1234567890,
 		"MaxSize" : 1048576,
 		"strings":["string1"],
@@ -41,6 +42,7 @@ func TestUtilJsonHelper(t *testing.T) {
 
 	Assert(jh.String("name") == "aaron", t, "should get 'aaron' %s", jh.String("name"))
 	Assert(jh.Int("int") == 1, t, "get int ")
+	Assert(jh.Int("intstr") == 1, t, "get string as int %s", jh.String("intstr"))
 	Assert(jh.String("int") == "1", t, "get int as string %s", jh.String("int"))
 	Assert(jh.Int("notint") == -1, t, "get non existent int = 0??? ")
 	Assert(jh.Int("ints[0]") == 1, t, "get int from array %d", jh.Int("ints[0]"))
