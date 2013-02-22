@@ -44,6 +44,16 @@ func CloseEnuf(a, b float64) bool {
 	}
 	return false
 }
+
+// take two ints, compare, need to be within 3%
+func CloseInt(a, b int) bool {
+	c := float64(a) / float64(b)
+	if c >= .97 && c <= 1.03 {
+		return true
+	}
+	return false
+}
+
 func StartTest() {
 	lastTest = time.Now()
 }

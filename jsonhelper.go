@@ -23,6 +23,18 @@ func JsonString(v interface{}) string {
 	return string(b)
 }
 
+type JsonRawWriter struct {
+	bytes.Buffer
+}
+
+func (m *JsonRawWriter) MarshalJSON() ([]byte, error) {
+	return m.Bytes(), nil
+}
+
+func (m *JsonRawWriter) Raw() json.RawMessage {
+	return json.RawMessage(m.Bytes())
+}
+
 // A simple wrapper tohelp json config files be more easily used
 // allows usage such as this
 //		
@@ -111,7 +123,15 @@ func jsonEntry(name string, v interface{}) (interface{}, bool) {
 	return nil, false
 }
 func (j JsonHelper) Get(n string) interface{} {
-	parts := strings.Split(n, ".")
+	var parts []string
+	if strings.Contains(n, "/") {
+		parts = strings.Split(n, "/")
+		if strings.HasPrefix(n, "/") && len(parts) > 0 {
+			parts = parts[1:]
+		}
+	} else {
+		parts = strings.Split(n, ".")
+	}
 	var root interface{}
 	var err error
 	var ok, isList, listEntry bool
@@ -165,7 +185,7 @@ func (j JsonHelper) Helpers(n string) []JsonHelper {
 		if l, ok := v.([]interface{}); ok {
 			jhl := make([]JsonHelper, 0)
 			for _, item := range l {
-				println(item)
+				//println(item)
 				if jh, ok := item.(map[string]interface{}); ok {
 					jhl = append(jhl, jh)
 				} else {

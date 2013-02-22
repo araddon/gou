@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
@@ -87,4 +88,8 @@ func NewUid() uint64 {
 	ui := binary.BigEndian.Uint64(b)
 	//Debugf("ui=%d  b=%v ", ui, b)
 	return ui
+}
+
+func (u *Uid) String() string {
+	return strconv.FormatUint(uint64(*u), 10)
 }
