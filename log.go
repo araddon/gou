@@ -157,8 +157,8 @@ func LogD(depth int, logLvl int, v ...interface{}) {
 // Low level log with depth , level, message and logger
 func DoLog(depth, logLvl int, msg string) {
 	if ErrLogLevel >= logLvl && loggerErr != nil {
-		loggerErr.Output(3, LogColor[logLvl]+msg+"\033[0m")
+		loggerErr.Output(depth, LogColor[logLvl]+msg+"\033[0m")
 	} else if LogLevel >= logLvl && logger != nil {
-		logger.Output(3, LogColor[logLvl]+msg+"\033[0m")
+		logger.Output(depth, LogColor[logLvl]+msg+"\033[0m")
 	}
 }
