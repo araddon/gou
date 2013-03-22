@@ -9,8 +9,9 @@ import (
 	"strings"
 )
 
-// turn a non-list into json byte list
-func makeJsonList(b []byte) []byte {
+// Convert a slice of bytes into an array by ensuring it is wrapped
+//  with []
+func MakeJsonList(b []byte) []byte {
 	if !bytes.HasPrefix(b, []byte{'['}) {
 		b = append([]byte{'['}, b...)
 		b = append(b, ']')
@@ -72,7 +73,7 @@ func NewJsonHelper(b []byte) JsonHelper {
 }
 func NewJsonHelpers(b []byte) []JsonHelper {
 	var jhl []JsonHelper
-	json.Unmarshal(makeJsonList(b), &jhl)
+	json.Unmarshal(MakeJsonList(b), &jhl)
 	return jhl
 }
 func (j JsonHelper) Helper(n string) JsonHelper {
