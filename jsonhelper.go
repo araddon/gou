@@ -38,7 +38,7 @@ func (m *JsonRawWriter) Raw() json.RawMessage {
 
 // A simple wrapper tohelp json config files be more easily used
 // allows usage such as this
-//		
+//
 //		jh := NewJsonHelper([]byte(`{
 //			"name":"string",
 //			"ints":[1,5,9,11],
@@ -115,6 +115,8 @@ func jsonEntry(name string, v interface{}) (interface{}, bool) {
 		} else {
 			return nil, false
 		}
+	case JsonHelper:
+		return v.(JsonHelper).Get(name), true
 	case []interface{}:
 		return v, true
 	default:
@@ -419,7 +421,7 @@ func (j JsonHelper) MapSafe(n string) (map[string]interface{}, bool) {
 	return m, true
 }
 
-// The following consts are from http://code.google.com/p/go-bit/ (Apache licensed). It 
+// The following consts are from http://code.google.com/p/go-bit/ (Apache licensed). It
 // lets us figure out how wide go ints are, and determine their max and min values.
 
 // Note the use of << to create an untyped constant.
