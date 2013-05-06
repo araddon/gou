@@ -390,23 +390,32 @@ func (j JsonHelper) Uint64(n string) uint64 {
 	}
 	return 0
 }
-func (j JsonHelper) Bool(n string) bool {
+
+func (j JsonHelper) BoolSafe(n string) (val bool, ok bool) {
 	v := j.Get(n)
 	if v != nil {
 		switch v.(type) {
 		case bool:
-			return v.(bool)
+			return v.(bool), true
 		case string:
 			if s := v.(string); len(s) > 0 {
 				if b, err := strconv.ParseBool(s); err == nil {
-					return b
+					return b, true
 				}
 			}
-		default:
-			Debug("no type? ", n, " ", v)
 		}
 	}
-	return false
+	return false, false
+}
+
+func (j JsonHelper) Bool(n string) bool {
+	val, ok := j.BoolSafe(n)
+	if !ok {
+		return false
+	}
+
+	return val
+
 }
 
 func (j JsonHelper) MapSafe(n string) (map[string]interface{}, bool) {
