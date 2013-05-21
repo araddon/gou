@@ -18,7 +18,7 @@ var (
 )
 
 // Use this in combo with StopCheck() for test functions that must start
-// processes such as 
+// processes such as
 func SetStopper(f func()) {
 	stopper = f
 }
@@ -31,8 +31,9 @@ func Assert(is bool, t *testing.T, format string, args ...interface{}) {
 			logger = log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
 			SetErrLogger(logger, "error")
 		}
-		DoLog(3, ERROR, fmt.Sprintf(format, args...))
-		t.Fail()
+		msg := fmt.Sprintf(format, args...)
+		DoLog(3, ERROR, msg)
+		t.Fatal(msg)
 	}
 }
 
@@ -108,7 +109,7 @@ func FetchResp(url string) (ret []byte, err error, resp *http.Response) {
 // posts an application/json to url with body
 // ie:   type = application/json
 func PostJson(url, body string) (ret string, err error, resp *http.Response) {
-	//Post(url string, bodyType string, body io.Reader) 
+	//Post(url string, bodyType string, body io.Reader)
 	buf := bytes.NewBufferString(body)
 	resp, err = http.Post(url, "application/json", buf)
 	defer func() {
@@ -130,7 +131,7 @@ func PostJson(url, body string) (ret string, err error, resp *http.Response) {
 
 // issues http delete an application/json to url with body
 func DeleteJson(url, body string) (ret string, err error, resp *http.Response) {
-	//Post(url string, bodyType string, body io.Reader) 
+	//Post(url string, bodyType string, body io.Reader)
 	buf := bytes.NewBufferString(body)
 	Debug(buf.Len())
 	req, err := http.NewRequest("DELETE", url, buf)
@@ -160,7 +161,7 @@ func DeleteJson(url, body string) (ret string, err error, resp *http.Response) {
 
 // posts a www-form encoded form to url with body
 func PostForm(url, body string) (ret string, err error, resp *http.Response) {
-	//Post(url string, bodyType string, body io.Reader) 
+	//Post(url string, bodyType string, body io.Reader)
 	buf := bytes.NewBufferString(body)
 	resp, err = http.Post(url, "application/x-www-form-urlencoded", buf)
 	defer func() {
