@@ -3,6 +3,8 @@ package gou
 import (
 	"fmt"
 	"log"
+	"syscall"
+	"unsafe"
 )
 
 const (
@@ -39,12 +41,19 @@ var (
 	ErrLogLevel int = ERROR
 	logger      *log.Logger
 	loggerErr   *log.Logger
-	logPrefix   string = ""
-	LogColor           = map[int]string{FATAL: "\033[0m\033[37m",
+	LogColor    = map[int]string{FATAL: "\033[0m\033[37m",
 		ERROR: "\033[0m\033[31m",
 		WARN:  "\033[0m\033[33m",
 		INFO:  "\033[0m\033[35m",
 		DEBUG: "\033[0m\033[34m"}
+	LogPrefix = map[int]string{
+		FATAL: "[FATAL] ",
+		ERROR: "[ERROR] ",
+		WARN:  "[WARN] ",
+		INFO:  "[INFO] ",
+		DEBUG: "[DEBUG] ",
+	}
+	postFix                      = "\033[0m"
 	LogLevelWords map[string]int = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
 )
 
@@ -77,11 +86,6 @@ func SetErrLogger(l *log.Logger, logLevel string) {
 }
 func GetErrLogger() *log.Logger {
 	return logger
-}
-
-// you can set a logger, prefix
-func SetLoggerPrefix(prefix string) {
-	logPrefix = prefix
 }
 
 // sets the log level from a string
@@ -167,9 +171,9 @@ func Logf(logLvl int, format string, v ...interface{}) {
 //    LogP(ERROR, "prefix", "message", anyItems, youWant)
 func LogP(logLvl int, prefix string, v ...interface{}) {
 	if ErrLogLevel >= logLvl && loggerErr != nil {
-		loggerErr.Output(3, prefix+LogColor[logLvl]+fmt.Sprint(v...)+"\033[0m")
+		loggerErr.Output(3, prefix+LogPrefix[logLvl]+fmt.Sprint(v...)+postFix)
 	} else if LogLevel >= logLvl && logger != nil {
-		logger.Output(3, prefix+LogColor[logLvl]+fmt.Sprint(v...)+"\033[0m")
+		logger.Output(3, prefix+LogPrefix[logLvl]+fmt.Sprint(v...)+postFix)
 	}
 }
 
@@ -177,18 +181,18 @@ func LogP(logLvl int, prefix string, v ...interface{}) {
 //    LogPf(ERROR, "prefix", "formatString %s %v", anyItems, youWant)
 func LogPf(logLvl int, prefix string, format string, v ...interface{}) {
 	if ErrLogLevel >= logLvl && loggerErr != nil {
-		loggerErr.Output(3, prefix+LogColor[logLvl]+fmt.Sprintf(format, v...)+"\033[0m")
+		loggerErr.Output(3, prefix+LogPrefix[logLvl]+fmt.Sprintf(format, v...)+postFix)
 	} else if LogLevel >= logLvl && logger != nil {
-		logger.Output(3, prefix+LogColor[logLvl]+fmt.Sprintf(format, v...)+"\033[0m")
+		logger.Output(3, prefix+LogPrefix[logLvl]+fmt.Sprintf(format, v...)+postFix)
 	}
 }
 
-// When you want to use the log short filename flag, and want to use 
+// When you want to use the log short filename flag, and want to use
 // the lower level logginf functions (say from an *Assert* type function
 // you need to modify the stack depth:
 //
 // 	   SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile|log.Lmicroseconds), lvl)
-//     
+//
 //     LogD(5, DEBUG, v...)
 func LogD(depth int, logLvl int, v ...interface{}) {
 	if LogLevel >= logLvl {
@@ -199,8 +203,33 @@ func LogD(depth int, logLvl int, v ...interface{}) {
 // Low level log with depth , level, message and logger
 func DoLog(depth, logLvl int, msg string) {
 	if ErrLogLevel >= logLvl && loggerErr != nil {
-		loggerErr.Output(depth, LogColor[logLvl]+msg+"\033[0m")
+		loggerErr.Output(depth, LogPrefix[logLvl]+msg+postFix)
 	} else if LogLevel >= logLvl && logger != nil {
-		logger.Output(depth, LogColor[logLvl]+msg+"\033[0m")
+		logger.Output(depth, LogPrefix[logLvl]+msg+postFix)
 	}
+}
+
+type winsize struct {
+	Row    uint16
+	Col    uint16
+	Xpixel uint16
+	Ypixel uint16
+}
+
+const (
+	_TIOCGWINSZ = 0x5413 // OSX 1074295912
+)
+
+// Determine is this process is running in a Terminal or not?
+func IsTerminal() bool {
+	ws := &winsize{}
+	retCode, _, _ := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(_TIOCGWINSZ),
+		uintptr(unsafe.Pointer(ws)))
+
+	if int(retCode) == -1 {
+		return false
+	}
+	return true
 }
