@@ -58,14 +58,26 @@ var (
 	LogLevelWords map[string]int = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
 )
 
-// you can set a logger, and log level,most common usage is:
+// Setup default logging to Stderr, equivalent to:
 //
-//	gou.SetLogger(log.New(os.Stdout, "", log.LstdFlags), "debug")
-//
-//  loglevls:   debug, info, warn, error, fatal
-// Note, that you can also set a seperate Error Log Level
+//	gou.SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), "debug")
 func SetupLogging(lvl string) {
-	SetLogger(log.New(os.Stdout, "", log.Ltime|log.Lshortfile), lvl)
+	SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), lvl)
+}
+
+// Setup colorized output if this is a terminal
+func SetColorIfTerminal() {
+	if IsTerminal() {
+		SetColorOutput()
+	}
+}
+
+// Setup colorized output
+func SetColorOutput() {
+	for lvl, color := range LogColor {
+		LogPrefix[lvl] = color
+	}
+	postFix = "\033[0m"
 }
 
 // you can set a logger, and log level,most common usage is:
