@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -62,7 +63,7 @@ var (
 //
 //	gou.SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), "debug")
 func SetupLogging(lvl string) {
-	SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), lvl)
+	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile), strings.ToLower(lvl))
 }
 
 // Setup colorized output if this is a terminal
