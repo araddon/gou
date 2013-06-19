@@ -37,19 +37,19 @@ func Assert(is bool, t *testing.T, format string, args ...interface{}) {
 	}
 }
 
-// take two floats, compare, need to be within .1%
+// take two floats, compare, need to be within 2%
 func CloseEnuf(a, b float64) bool {
 	c := a / b
-	if c > .999 && c < 1.001 {
+	if c > .98 && c < 1.02 {
 		return true
 	}
 	return false
 }
 
-// take two ints, compare, need to be within 3%
+// take two ints, compare, need to be within 5%
 func CloseInt(a, b int) bool {
 	c := float64(a) / float64(b)
-	if c >= .97 && c <= 1.03 {
+	if c >= .95 && c <= 1.05 {
 		return true
 	}
 	return false
