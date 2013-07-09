@@ -135,42 +135,42 @@ func Debugf(format string, v ...interface{}) {
 
 // Log at info level
 func Info(v ...interface{}) {
-	if LogLevel >= 4 {
+	if LogLevel >= 3 {
 		DoLog(3, INFO, fmt.Sprint(v...))
 	}
 }
 
 // info log formatted
 func Infof(format string, v ...interface{}) {
-	if LogLevel >= 4 {
+	if LogLevel >= 3 {
 		DoLog(3, INFO, fmt.Sprintf(format, v...))
 	}
 }
 
 // Log at warn level
 func Warn(v ...interface{}) {
-	if LogLevel >= 4 {
+	if LogLevel >= 2 {
 		DoLog(3, WARN, fmt.Sprint(v...))
 	}
 }
 
 // Debug log formatted
 func Warnf(format string, v ...interface{}) {
-	if LogLevel >= 4 {
+	if LogLevel >= 2 {
 		DoLog(3, WARN, fmt.Sprintf(format, v...))
 	}
 }
 
 // Log at error level
 func Error(v ...interface{}) {
-	if LogLevel >= 4 {
+	if LogLevel >= 1 {
 		DoLog(3, ERROR, fmt.Sprint(v...))
 	}
 }
 
 // Error log formatted
 func Errorf(format string, v ...interface{}) {
-	if LogLevel >= 4 {
+	if LogLevel >= 1 {
 		DoLog(3, ERROR, fmt.Sprintf(format, v...))
 	}
 }
