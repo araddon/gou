@@ -430,6 +430,11 @@ func (j JsonHelper) MapSafe(n string) (map[string]interface{}, bool) {
 	return m, true
 }
 
+func (j JsonHelper) PrettyJson() []byte {
+	jsonPretty, _ := json.MarshalIndent(j, "  ", "  ")
+	return jsonPretty
+}
+
 // The following consts are from http://code.google.com/p/go-bit/ (Apache licensed). It
 // lets us figure out how wide go ints are, and determine their max and min values.
 
