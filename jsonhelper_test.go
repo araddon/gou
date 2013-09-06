@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -119,4 +120,12 @@ func TestJsonPathNotation(t *testing.T) {
 	// note this one has period in name
 	Assert(jh.String("/period.name") == "value", t, "test period in name ")
 
+}
+
+func TestFromReader(t *testing.T) {
+	raw := `{"testing": 123}`
+	reader := strings.NewReader(raw)
+	jh, err := NewJsonHelperReader(reader)
+	Assert(err == nil, t, "Unexpected error decoding json: %s", err)
+	Assert(jh.Int("testing") == 123, t, "Unexpected value in json: %d", jh.Int("testing"))
 }
