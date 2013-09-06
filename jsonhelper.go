@@ -3,6 +3,7 @@ package gou
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"math"
 	"reflect"
 	"strconv"
@@ -70,6 +71,11 @@ func NewJsonHelper(b []byte) JsonHelper {
 	jh := make(JsonHelper)
 	json.Unmarshal(b, &jh)
 	return jh
+}
+func NewJsonHelperReader(r io.Reader) (jh JsonHelper, err error) {
+	jh = make(JsonHelper)
+	err = json.NewDecoder(r).Decode(&jh)
+	return
 }
 func NewJsonHelpers(b []byte) []JsonHelper {
 	var jhl []JsonHelper
