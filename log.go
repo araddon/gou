@@ -63,7 +63,7 @@ var (
 //
 //	gou.SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), "debug")
 func SetupLogging(lvl string) {
-	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile), strings.ToLower(lvl))
+	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), strings.ToLower(lvl))
 }
 
 // Setup colorized output if this is a terminal
