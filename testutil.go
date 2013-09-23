@@ -2,10 +2,13 @@ package gou
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -104,6 +107,41 @@ func FetchResp(url string) (ret []byte, err error, resp *http.Response) {
 	}
 	ret, err = ioutil.ReadAll(resp.Body)
 	return
+}
+
+// Simple Fetch Wrapper, given a url it returns bytes and response
+func JsonHelperHttp(method, urlStr string, data interface{}) (JsonHelper, error) {
+	var body io.Reader
+	if data != nil {
+		switch val := data.(type) {
+		case string:
+			body = bytes.NewReader([]byte(val))
+		case io.Reader:
+			body = val
+		case url.Values:
+			body = bytes.NewReader([]byte(val.Encode()))
+		default:
+			by, err := json.Marshal(data)
+			if err != nil {
+				return nil, err
+			}
+			body = bytes.NewReader(by)
+		}
+
+	}
+	req, err := http.NewRequest(method, urlStr, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	jh, err := NewJsonHelperReader(resp.Body)
+	return jh, err
 }
 
 // posts an application/json to url with body

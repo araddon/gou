@@ -424,6 +424,18 @@ func (j JsonHelper) Bool(n string) bool {
 
 }
 
+func (j JsonHelper) Map(n string) map[string]interface{} {
+	v := j.Get(n)
+	if v == nil {
+		return nil
+	}
+	m, ok := v.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	return m
+}
+
 func (j JsonHelper) MapSafe(n string) (map[string]interface{}, bool) {
 	v := j.Get(n)
 	if v == nil {
