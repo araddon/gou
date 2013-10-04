@@ -2,6 +2,11 @@
 
 package gou
 
+import (
+	"syscall"
+	"unsafe"
+)
+
 // Determine is this process is running in a Terminal or not?
 func IsTerminal() bool {
 	ws := &winsize{}
