@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"math"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -72,16 +73,19 @@ func NewJsonHelper(b []byte) JsonHelper {
 	json.Unmarshal(b, &jh)
 	return jh
 }
+
 func NewJsonHelperReader(r io.Reader) (jh JsonHelper, err error) {
 	jh = make(JsonHelper)
 	err = json.NewDecoder(r).Decode(&jh)
 	return
 }
+
 func NewJsonHelpers(b []byte) []JsonHelper {
 	var jhl []JsonHelper
 	json.Unmarshal(MakeJsonList(b), &jhl)
 	return jhl
 }
+
 func (j JsonHelper) Helper(n string) JsonHelper {
 	if v, ok := j[n]; ok {
 		switch v.(type) {
@@ -106,6 +110,7 @@ func (j JsonHelper) Helper(n string) JsonHelper {
 	}
 	return nil
 }
+
 func jsonList(v interface{}) []interface{} {
 	switch v.(type) {
 	case []interface{}:
@@ -113,6 +118,7 @@ func jsonList(v interface{}) []interface{} {
 	}
 	return nil
 }
+
 func jsonEntry(name string, v interface{}) (interface{}, bool) {
 	switch v.(type) {
 	case map[string]interface{}:
@@ -131,6 +137,11 @@ func jsonEntry(name string, v interface{}) (interface{}, bool) {
 	}
 	return nil, false
 }
+
+// Get the key (or keypath) value as interface, mostly used
+// internally through String, etc methods
+//
+//    jh.Get("name.subname")
 func (j JsonHelper) Get(n string) interface{} {
 	var parts []string
 	if strings.Contains(n, "/") {
@@ -268,7 +279,7 @@ func (j JsonHelper) Strings(n string) []string {
 			}
 			return sva
 		default:
-			//Debug("Kind = ?? ", n, v)
+			return []string{j.String(n)}
 		}
 	}
 	return nil
@@ -372,6 +383,7 @@ func valToInt64(i interface{}) (int64, bool) {
 	}
 	return 0, false
 }
+
 func (j JsonHelper) Uint64(n string) uint64 {
 	v := j.Get(n)
 	if v != nil {
@@ -468,3 +480,83 @@ const (
 	MinInt  = -MaxInt - 1            // either -1 << 31 or -1 << 63
 	MaxUint = 1<<BitsPerWord - 1     // either 1<<32 - 1 or 1<<64 - 1
 )
+
+func flattenHelper(uv url.Values, jh JsonHelper, pre string) error {
+	for k, v := range jh {
+		if err := flattenJsonValue(uv, v, pre+k); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func flattenJsonMap(uv url.Values, jsonMap map[string]interface{}, pre string) error {
+	for k, v := range jsonMap {
+		if err := flattenJsonValue(uv, v, pre+k); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func flattenJsonValue(uv url.Values, v interface{}, k string) error {
+	// TODO:  all these ints aren't possible are they?
+	switch x := v.(type) {
+	case []string:
+		uv[k] = x
+	// case []interface{}:
+	// 	sva := make([]string, 0)
+	// 	for _, av := range x {
+	// 		if err := flattenJsonValue(n, av, k); err != nil {
+	// 			return nil
+	// 		}
+	// 	}
+	// 	if len(sva) > 0 {
+	// 		uv[k] = sva
+	// 	}
+	case map[string]bool:
+		// what to do?
+		Info("not implemented: [string]bool")
+	case map[string]interface{}:
+		if len(x) > 0 {
+			if err := flattenJsonMap(uv, x, k+"."); err != nil {
+				return err
+			}
+		}
+	case string:
+		uv.Set(k, x)
+	case bool:
+		if x == true {
+			uv.Set(k, "t")
+		} else {
+			uv.Set(k, "f")
+		}
+	case int:
+		uv.Set(k, strconv.FormatInt(int64(x), 10))
+	case int8:
+		uv.Set(k, strconv.FormatInt(int64(x), 10))
+	case int16:
+		uv.Set(k, strconv.FormatInt(int64(x), 10))
+	case int32:
+		uv.Set(k, strconv.FormatInt(int64(x), 10))
+	case int64:
+		uv.Set(k, strconv.FormatInt(x, 10))
+	case uint:
+		uv.Set(k, strconv.FormatUint(uint64(x), 10))
+	case uint8:
+		uv.Set(k, strconv.FormatUint(uint64(x), 10))
+	case uint16:
+		uv.Set(k, strconv.FormatUint(uint64(x), 10))
+	case uint32:
+		uv.Set(k, strconv.FormatUint(uint64(x), 10))
+	case uint64:
+		uv.Set(k, strconv.FormatUint(x, 10))
+	case float32:
+		uv.Set(k, strconv.FormatFloat(float64(x), 'f', -1, 64))
+	case float64:
+		uv.Set(k, strconv.FormatFloat(x, 'f', -1, 64))
+	default:
+		// what types don't we support?
+		//  []interface{}
+	}
+	return nil
+}
