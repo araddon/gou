@@ -1,12 +1,12 @@
-gou - Go Utilitities
-===
+gou - Go Utilities
+===========================
 
-Go Utilities (logging, json, config, event helpers)
+Go Utilities (logging, json, assert)
 
 JsonHelper
 ===============
 
-Yet Another Go Json Helper
+A Go Json Helper, focused on Type coercion, and json path query.
 
 ```go
 	package main
@@ -18,6 +18,7 @@ Yet Another Go Json Helper
 
 		var jsonData := []byte(`{
 			"name":"aaron",
+			"nullstring":null,
 			"ints":[1,2,3,4],
 			"int":1,
 			"intstr":"1",
@@ -39,6 +40,8 @@ Yet Another Go Json Helper
 			],
 			"period.name":"value"
 		}`
+
+		jh := NewJsonHelper(jsonData)
 
 		// String method
 		Assert(jh.String("name") == "aaron", t, "should get 'aaron' %s", jh.String("name"))
@@ -113,7 +116,7 @@ Yet Another Go Assert
 Logging
 ===============
 
-Yet Another Go Logger configureable logging.
+Yet Another Go Logger, configureable logging.
 
 ```go
 	package main
@@ -128,7 +131,7 @@ Yet Another Go Logger configureable logging.
 		gou.SetupLogging(*logLevel)
 
 		// logging methods
-		Debug("hello", thing, " more ", stuff)
+		gou.Debug("hello", thing, " more ", stuff)
 
 		gou.Error("hello")
 

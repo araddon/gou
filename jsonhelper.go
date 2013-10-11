@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"math"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -39,6 +38,56 @@ func (m *JsonRawWriter) Raw() json.RawMessage {
 }
 
 // A simple wrapper tohelp json config files be more easily used
+type JsonInterface struct {
+	data interface{}
+}
+
+// Encode returns its marshaled data as `[]byte`
+func (j *JsonInterface) Encode() ([]byte, error) {
+	return j.MarshalJSON()
+}
+
+// Implements the json.Marshaler interface.
+func (j *JsonInterface) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&j.data)
+}
+
+// Implements the json.Unmarshal interface.
+func (j *JsonInterface) UnmarshalJSON(raw []byte) error {
+	return json.Unmarshal(raw, &j.data)
+}
+
+func (j *JsonInterface) String() (string, error) {
+	return CoerceString(j.data)
+}
+
+func (j JsonInterface) StringSh() string {
+	val, _ := CoerceString(j.data)
+	return val
+}
+
+func (j *JsonInterface) Int() (int, error) {
+	return CoerceInt(j.data)
+}
+
+func (j JsonInterface) IntSh() int {
+	val, _ := CoerceInt(j.data)
+	return val
+}
+
+func (j *JsonInterface) Float() (float32, error) {
+	val, err := CoerceFloat(j.data)
+	return float32(val), err
+}
+
+func (j JsonInterface) FloatSh() float32 {
+	val, _ := CoerceFloat(j.data)
+	return float32(val)
+}
+
+// A wrapper around a map[string]interface{} to facilitate coercion
+// of json data to what you expect
+//
 // allows usage such as this
 //
 //		jh := NewJsonHelper([]byte(`{
@@ -120,9 +169,9 @@ func jsonList(v interface{}) []interface{} {
 }
 
 func jsonEntry(name string, v interface{}) (interface{}, bool) {
-	switch v.(type) {
+	switch val := v.(type) {
 	case map[string]interface{}:
-		if root, ok := v.(map[string]interface{})[name]; ok {
+		if root, ok := val[name]; ok {
 			return root, true
 		} else {
 			return nil, false
@@ -142,6 +191,9 @@ func jsonEntry(name string, v interface{}) (interface{}, bool) {
 // internally through String, etc methods
 //
 //    jh.Get("name.subname")
+//    jh.Get("name/subname")
+//    jh.Get("name.arrayname[1]")
+//    jh.Get("name.arrayname[]")
 func (j JsonHelper) Get(n string) interface{} {
 	var parts []string
 	if strings.Contains(n, "/") {
@@ -234,26 +286,8 @@ func (j JsonHelper) Int64(n string) int64 {
 }
 func (j JsonHelper) String(n string) string {
 	if v := j.Get(n); v != nil {
-		switch v.(type) {
-		case string:
-			return v.(string)
-		case int:
-			return strconv.Itoa(v.(int))
-		case int32:
-			return strconv.FormatInt(int64(v.(int32)), 10)
-		case int64:
-			return strconv.FormatInt(v.(int64), 10)
-		case uint32:
-			return strconv.FormatUint(uint64(v.(uint32)), 10)
-		case uint64:
-			return strconv.FormatUint(v.(uint64), 10)
-		case float64:
-			//(v.(float64), 10)
-			return strconv.FormatInt(int64(v.(float64)), 10)
-		default:
-			to := reflect.TypeOf(v)
-			Debug("not string type? ", n, " ", v, " ", to.String())
-		}
+		val, _ := CoerceString(v)
+		return val
 	}
 	return ""
 }
@@ -327,84 +361,10 @@ func (j JsonHelper) IntSafe(n string) (int, bool) {
 	return valToInt(v)
 }
 
-// Given any numeric type (float*, int*, uint*, string) return an int. Returns false if it would
-// overflow or if the the argument is not numeric.
-func valToInt(i interface{}) (int, bool) {
-	i64, ok := valToInt64(i)
-	if !ok {
-		return -1, false
-	}
-	if i64 > MaxInt || i64 < MinInt {
-		return -1, false
-	}
-	return int(i64), true
-}
-
-// Given any simple type (float*, int*, uint*, string) return an int64. Returns false if it would
-// overflow or if the the argument is not numeric.
-func valToInt64(i interface{}) (int64, bool) {
-	switch x := i.(type) {
-	case float32:
-		return int64(x), true
-	case float64:
-		return int64(x), true
-	case uint8:
-		return int64(x), true
-	case uint16:
-		return int64(x), true
-	case uint32:
-		return int64(x), true
-	case uint64:
-		if x > math.MaxInt64 {
-			return 0, false
-		}
-		return int64(x), true
-	case int8:
-		return int64(x), true
-	case int16:
-		return int64(x), true
-	case int32:
-		return int64(x), true
-	case int64:
-		return int64(x), true
-	case int:
-		return int64(x), true
-	case uint:
-		if uint64(x) > math.MaxInt64 {
-			return 0, false
-		}
-		return int64(x), true
-	case string:
-		if len(x) > 0 {
-			if iv, err := strconv.ParseInt(x, 10, 64); err == nil {
-				return iv, true
-			}
-		}
-	}
-	return 0, false
-}
-
 func (j JsonHelper) Uint64(n string) uint64 {
 	v := j.Get(n)
 	if v != nil {
-		switch v.(type) {
-		case int:
-			return uint64(v.(int))
-		case int64:
-			return uint64(v.(int64))
-		case uint32:
-			return uint64(v.(uint32))
-		case uint64:
-			return uint64(v.(uint64))
-		case float32:
-			f := float64(v.(float32))
-			return uint64(f)
-		case float64:
-			f := v.(float64)
-			return uint64(f)
-		default:
-			Debug("no type? ", n, " ", v)
-		}
+		return CoerceUintShort(v)
 	}
 	return 0
 }

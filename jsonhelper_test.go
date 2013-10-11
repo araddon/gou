@@ -9,6 +9,9 @@ import (
 	"testing"
 )
 
+//  go test -bench=".*"
+//  go test -run="(Util)"
+
 var (
 	jh JsonHelper
 )
@@ -18,6 +21,7 @@ func init() {
 	// create test data
 	json.Unmarshal([]byte(`{
 		"name":"aaron",
+		"nullstring":null,
 		"ints":[1,2,3,4],
 		"int":1,
 		"intstr":"1",
@@ -63,12 +67,11 @@ func TestJsonRawWriter(t *testing.T) {
 	*/
 }
 
-//  go test -bench=".*" 
-//  go test -run="(Util)"
-
-func TestJsonPathGet(t *testing.T) {
+func TestJsonHelper(t *testing.T) {
 
 	Assert(jh.String("name") == "aaron", t, "should get 'aaron' %s", jh.String("name"))
+	Assert(jh.String("nullstring") == "", t, "should get '' %s", jh.String("nullstring"))
+
 	Assert(jh.Int("int") == 1, t, "get int ")
 	Assert(jh.Int("ints[0]") == 1, t, "get int from array %d", jh.Int("ints[0]"))
 	Assert(jh.Int("ints[2]") == 3, t, "get int from array %d", jh.Int("ints[0]"))
@@ -101,6 +104,30 @@ func TestJsonPathGet(t *testing.T) {
 	Assert(len(jhm) == 1, t, "get list of helpers")
 	Assert(jhm[0].Int("sub") == 2, t, "Should get list of helpers")
 
+}
+
+func TestJsonInterface(t *testing.T) {
+
+	var jim map[string]JsonInterface
+	err := json.Unmarshal([]byte(`{
+		"nullstring":null,
+		"string":"string",
+		"int":22,
+		"float":22.2,
+		"floatstr":"22.2",
+		"intstr":"22"
+	}`), &jim)
+	Assert(err == nil, t, "no error:%v ", err)
+	Assert(jim["nullstring"].StringSh() == "", t, "nullstring: %v", jim["nullstring"])
+	Assert(jim["string"].StringSh() == "string", t, "nullstring: %v", jim["string"])
+	Assert(jim["int"].IntSh() == 22, t, "int: %v", jim["int"])
+	Assert(jim["int"].StringSh() == "22", t, "int->string: %v", jim["int"])
+	Assert(jim["int"].FloatSh() == float32(22), t, "int->float: %v", jim["int"])
+	Assert(jim["float"].FloatSh() == 22.2, t, "float: %v", jim["float"])
+	Assert(jim["float"].StringSh() == "22.2", t, "float->string: %v", jim["float"])
+	Assert(jim["float"].IntSh() == 22, t, "float->int: %v", jim["float"])
+	Assert(jim["intstr"].IntSh() == 22, t, "intstr: %v", jim["intstr"])
+	Assert(jim["intstr"].FloatSh() == float32(22), t, "intstr->float: %v", jim["intstr"])
 }
 
 func TestJsonCoercion(t *testing.T) {
