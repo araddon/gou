@@ -3,7 +3,10 @@ package gou
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -133,6 +136,27 @@ func NewJsonHelpers(b []byte) []JsonHelper {
 	var jhl []JsonHelper
 	json.Unmarshal(MakeJsonList(b), &jhl)
 	return jhl
+}
+
+// Make a JsonHelper from http response.   This will automatically
+// close the response body
+func NewJsonHelperFromResp(resp *http.Response) (JsonHelper, error) {
+	jh := make(JsonHelper)
+	if resp == nil || resp.Body == nil {
+		return jh, fmt.Errorf("No response or response body to read")
+	}
+	defer resp.Body.Close()
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if len(respBytes) == 0 {
+		return jh, fmt.Errorf("No data in response")
+	}
+	if err := json.Unmarshal(respBytes, &jh); err != nil {
+		return jh, err
+	}
+	return jh, nil
 }
 
 func (j JsonHelper) Helper(n string) JsonHelper {
