@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// Coerce types (string,int,int64, float, []byte) into String type
 func CoerceString(v interface{}) (string, error) {
 	switch val := v.(type) {
 	case string:
@@ -41,6 +42,8 @@ func CoerceString(v interface{}) (string, error) {
 	}
 	return "", fmt.Errorf("Could not coerce to string: %v", v)
 }
+
+// Coerce type to string, returning zero length string if error or nil
 func CoerceStringShort(v interface{}) string {
 	val, _ := CoerceString(v)
 	return val
@@ -147,8 +150,8 @@ func valToInt(i interface{}) (int, bool) {
 	return int(i64), true
 }
 
-// Given any simple type (float*, int*, uint*, string) return an int64. Returns false if it would
-// overflow or if the the argument is not numeric.
+// Given any simple type (float*, int*, uint*, string, []byte, json.RawMessage) return an int64.
+// Returns false if it would overflow or if the the argument is not numeric.
 func valToInt64(i interface{}) (int64, bool) {
 	switch x := i.(type) {
 	case float32:

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	//2013-2-3 
+	//2013-2-3
 	ourEpoch = uint32(1359931242)
 )
 
@@ -28,7 +28,7 @@ https://github.com/bmizerany/noeqd
 It is a roughly sortable UID, but uses machine specific info (host, processid)
 as part of the uid so each machine *will* have unique id's
 
-The host+processid is 2 bytes (65536 combinations)
+The host+processid is 3 bytes
 
 */
 

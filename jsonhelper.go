@@ -40,7 +40,8 @@ func (m *JsonRawWriter) Raw() json.RawMessage {
 	return json.RawMessage(m.Bytes())
 }
 
-// A simple wrapper tohelp json config files be more easily used
+// A simple wrapper to help json data be consumed when not
+// using Strongly typed structs.
 type JsonInterface struct {
 	data interface{}
 }
@@ -60,36 +61,42 @@ func (j *JsonInterface) UnmarshalJSON(raw []byte) error {
 	return json.Unmarshal(raw, &j.data)
 }
 
+// Coerce to a String
 func (j *JsonInterface) String() (string, error) {
 	return CoerceString(j.data)
 }
 
+// Coerce to a string, may be zero length if missing, or zero length
 func (j JsonInterface) StringSh() string {
 	val, _ := CoerceString(j.data)
 	return val
 }
 
+// Coerce to Int
 func (j *JsonInterface) Int() (int, error) {
 	return CoerceInt(j.data)
 }
 
+// Coerce to Int, 0 returned if missing or zero
 func (j JsonInterface) IntSh() int {
 	val, _ := CoerceInt(j.data)
 	return val
 }
 
+// Coerce to Float, return err if needed
 func (j *JsonInterface) Float() (float32, error) {
 	val, err := CoerceFloat(j.data)
 	return float32(val), err
 }
 
+// Coerce to Float, 0 returned if 0 or missing
 func (j JsonInterface) FloatSh() float32 {
 	val, _ := CoerceFloat(j.data)
 	return float32(val)
 }
 
 // A wrapper around a map[string]interface{} to facilitate coercion
-// of json data to what you expect
+// of json data to what you want
 //
 // allows usage such as this
 //
@@ -157,31 +164,6 @@ func NewJsonHelperFromResp(resp *http.Response) (JsonHelper, error) {
 		return jh, err
 	}
 	return jh, nil
-}
-
-func (j JsonHelper) Helper(n string) JsonHelper {
-	if v, ok := j[n]; ok {
-		switch v.(type) {
-		case map[string]interface{}:
-			cn := JsonHelper{}
-			for n, val := range v.(map[string]interface{}) {
-				cn[n] = val
-			}
-			return cn
-		case map[string]string:
-			cn := JsonHelper{}
-			for n, val := range v.(map[string]string) {
-				cn[n] = val
-			}
-			return cn
-		case JsonHelper:
-			return v.(JsonHelper)
-		default:
-			rv := reflect.ValueOf(v)
-			Debug("no map? ", v, rv.String(), rv.Type())
-		}
-	}
-	return nil
 }
 
 func jsonList(v interface{}) []interface{} {
@@ -264,36 +246,60 @@ func (j JsonHelper) Get(n string) interface{} {
 	return root
 }
 
-// Get list of Helpers at given name
+// Get a Helper from a string path
+func (j JsonHelper) Helper(n string) JsonHelper {
+	if v, ok := j[n]; ok {
+		switch v.(type) {
+		case map[string]interface{}:
+			cn := JsonHelper{}
+			for n, val := range v.(map[string]interface{}) {
+				cn[n] = val
+			}
+			return cn
+		case map[string]string:
+			cn := JsonHelper{}
+			for n, val := range v.(map[string]string) {
+				cn[n] = val
+			}
+			return cn
+		case JsonHelper:
+			return v.(JsonHelper)
+		default:
+			rv := reflect.ValueOf(v)
+			Debug("no map? ", v, rv.String(), rv.Type())
+		}
+	}
+	return nil
+}
+
+// Get list of Helpers at given name.  Trys to coerce into
+// proper Helper type
 func (j JsonHelper) Helpers(n string) []JsonHelper {
 	v := j.Get(n)
 	if v == nil {
 		return nil
 	}
-	switch v.(type) {
+	switch val := v.(type) {
 	case []map[string]interface{}:
 		hl := make([]JsonHelper, 0)
-		for _, val := range v.([]map[string]interface{}) {
-			hl = append(hl, val)
+		for _, mapVal := range val {
+			hl = append(hl, mapVal)
 		}
 		return hl
 	case []interface{}:
-		if l, ok := v.([]interface{}); ok {
-			jhl := make([]JsonHelper, 0)
-			for _, item := range l {
-				//println(item)
-				if jh, ok := item.(map[string]interface{}); ok {
-					jhl = append(jhl, jh)
-				} else {
-					Debug(jh)
-				}
+		jhl := make([]JsonHelper, 0)
+		for _, item := range val {
+			if jh, ok := item.(map[string]interface{}); ok {
+				jhl = append(jhl, jh)
 			}
-			return jhl
 		}
+		return jhl
 	}
 
 	return nil
 }
+
+// Gets slice of interface{}
 func (j JsonHelper) List(n string) []interface{} {
 	v := j.Get(n)
 	if l, ok := v.([]interface{}); ok {
@@ -301,6 +307,8 @@ func (j JsonHelper) List(n string) []interface{} {
 	}
 	return nil
 }
+
+// Get Int64
 func (j JsonHelper) Int64(n string) int64 {
 	i64, ok := j.Int64Safe(n)
 	if !ok {

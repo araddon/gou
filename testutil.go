@@ -109,7 +109,8 @@ func FetchResp(url string) (ret []byte, err error, resp *http.Response) {
 	return
 }
 
-// Simple Fetch Wrapper, given a url it returns bytes and response
+// Simple Fetch Wrapper, given a url it returns Helper, error
+// Sends as type application/json, interprets whatever datatype is sent in appropriately
 func JsonHelperHttp(method, urlStr string, data interface{}) (JsonHelper, error) {
 	var body io.Reader
 	if data != nil {
