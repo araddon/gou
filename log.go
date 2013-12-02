@@ -38,6 +38,7 @@ LogColor         = map[int]string{FATAL: "\033[0m\033[37m",
 
 var (
 	LogLevel    int = ERROR
+	EMPTY       struct{}
 	ErrLogLevel int = ERROR
 	logger      *log.Logger
 	loggerErr   *log.Logger
