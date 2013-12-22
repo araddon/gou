@@ -302,8 +302,15 @@ func (j JsonHelper) Helpers(n string) []JsonHelper {
 // Gets slice of interface{}
 func (j JsonHelper) List(n string) []interface{} {
 	v := j.Get(n)
-	if l, ok := v.([]interface{}); ok {
-		return l
+	switch val := v.(type) {
+	case []string:
+		il := make([]interface{}, len(val))
+		for i, val := range val {
+			il[i] = val
+		}
+		return il
+	case []interface{}:
+		return val
 	}
 	return nil
 }
