@@ -65,6 +65,13 @@ func SetupLogging(lvl string) {
 	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), strings.ToLower(lvl))
 }
 
+// Setup default logging to Stderr, equivalent to:
+//
+//	gou.SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), level)
+func SetupLoggingLong(lvl string) {
+	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Llongfile|log.Lmicroseconds), strings.ToLower(lvl))
+}
+
 // Setup colorized output if this is a terminal
 func SetColorIfTerminal() {
 	if IsTerminal() {
