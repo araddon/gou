@@ -3,14 +3,11 @@ package gou
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"testing"
 	"time"
 )
 
@@ -49,20 +46,6 @@ func WaitFor(check func() bool, timeoutSecs int) {
 // processes such as
 func SetStopper(f func()) {
 	stopper = f
-}
-
-// dumb simple assert for testing, printing
-//    Assert(len(items) == 9, t, "Should be 9 but was %d", len(items))
-func Assert(is bool, t *testing.T, format string, args ...interface{}) {
-	if is == false {
-		if logger == nil {
-			logger = log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
-			SetErrLogger(logger, "error")
-		}
-		msg := fmt.Sprintf(format, args...)
-		DoLog(3, ERROR, msg)
-		t.Fatal(msg)
-	}
 }
 
 // take two floats, compare, need to be within 2%

@@ -3,6 +3,7 @@ package gou
 import (
 	"bytes"
 	"encoding/json"
+	. "github.com/araddon/gou/goutest"
 	"log"
 	"os"
 	"strings"
