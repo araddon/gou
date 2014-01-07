@@ -139,3 +139,7 @@ Yet Another Go Logger, configureable logging.
 	}
 
 ```
+
+License
+===============
+MIT License
