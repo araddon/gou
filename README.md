@@ -1,7 +1,7 @@
 gou - Go Utilities
 ===========================
 
-Go Utilities (logging, json, assert)
+Go Utilities (logging, json)
 
 JsonHelper
 ===============
