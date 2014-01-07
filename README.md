@@ -10,7 +10,8 @@ A Go Json Helper, focused on Type coercion, and json path query.
 
 ```go
 	package main
-	import "github.com/araddon/gou"
+	import . "github.com/araddon/gou"
+	import . "github.com/araddon/gou/goutest"
 	import "testing"
 
 
@@ -96,23 +97,6 @@ A Go Json Helper, focused on Type coercion, and json path query.
 ```
 
 	
-Assert
-===============
-
-Yet Another Go Assert
-
-```go
-	import "github.com/araddon/gou"
-	import "testing"
-
-	func TestAssert(t *testing.T) {
-
-		gou.Assert(true == true,t,"Must be true! %v", true)
-
-	}
-
-```
-
 Logging
 ===============
 
