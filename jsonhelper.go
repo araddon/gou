@@ -24,7 +24,10 @@ func MakeJsonList(b []byte) []byte {
 }
 
 func JsonString(v interface{}) string {
-	b, _ := json.Marshal(v)
+	b, err := json.Marshal(v)
+	if err != nil {
+		return `""`
+	}
 	return string(b)
 }
 
