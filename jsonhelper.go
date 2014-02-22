@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -267,9 +266,6 @@ func (j JsonHelper) Helper(n string) JsonHelper {
 			return cn
 		case JsonHelper:
 			return v.(JsonHelper)
-		default:
-			rv := reflect.ValueOf(v)
-			Debug("no map? ", v, rv.String(), rv.Type())
 		}
 	}
 	return nil
