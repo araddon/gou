@@ -87,6 +87,13 @@ func SetColorOutput() {
 	postFix = "\033[0m"
 }
 
+// Setup default log output to go to a dev/null
+//
+//	log.SetOutput(new(DevNull))
+func DiscardStandardLogger() {
+	log.SetOutput(new(DevNull))
+}
+
 // you can set a logger, and log level,most common usage is:
 //
 //	gou.SetLogger(log.New(os.Stdout, "", log.LstdFlags), "debug")
@@ -249,3 +256,11 @@ type winsize struct {
 const (
 	_TIOCGWINSZ = 0x5413 // OSX 1074295912
 )
+
+//http://play.golang.org/p/5LIA41Iqfp
+// Dummy discard, satisfies io.Writer without importing io or os.
+type DevNull struct{}
+
+func (DevNull) Write(p []byte) (int, error) {
+	return len(p), nil
+}
