@@ -192,7 +192,6 @@ func jsonEntry(name string, v interface{}) (interface{}, bool) {
 		Debug("no type? ", name, " ", v)
 		return nil, false
 	}
-	return nil, false
 }
 
 // Get the key (or keypath) value as interface, mostly used
