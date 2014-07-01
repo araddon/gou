@@ -26,9 +26,9 @@ func CoerceString(v interface{}) (string, error) {
 	case uint64:
 		return strconv.FormatUint(val, 10), nil
 	case float32:
-		return fmt.Sprintf("%v", val), nil
+		return strconv.FormatFloat(float64(val), 'f', -1, 32), nil
 	case float64:
-		return fmt.Sprintf("%v", val), nil
+		return strconv.FormatFloat(val, 'f', -1, 64), nil
 	case []byte:
 		if string(val) == "null" || string(val) == "NULL" {
 			return "", nil
