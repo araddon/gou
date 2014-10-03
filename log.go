@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -196,6 +197,21 @@ func Log(logLvl int, v ...interface{}) {
 	}
 }
 
+// Log to logger if setup, grab a stack trace and add that as well
+//
+//    u.LogTracef(u.ERROR, "message %s", varx)
+//
+func LogTracef(logLvl int, format string, v ...interface{}) {
+	if LogLevel >= logLvl {
+		// grab a stack trace
+		stackBuf := make([]byte, 4096)
+		stackBufLen := runtime.Stack(stackBuf, false)
+		stackTraceStr := string(stackBuf[0:stackBufLen])
+		v = append(v, stackTraceStr)
+		DoLog(4, logLvl, fmt.Sprintf(format+"%v", v...))
+	}
+}
+
 // Log to logger if setup
 //    Logf(ERROR, "message %d", 20)
 func Logf(logLvl int, format string, v ...interface{}) {
@@ -214,7 +230,7 @@ func LogP(logLvl int, prefix string, v ...interface{}) {
 	}
 }
 
-// Log to logger if setup
+// Log to logger if setup with a prefix
 //    LogPf(ERROR, "prefix", "formatString %s %v", anyItems, youWant)
 func LogPf(logLvl int, prefix string, format string, v ...interface{}) {
 	if ErrLogLevel >= logLvl && loggerErr != nil {
@@ -225,12 +241,17 @@ func LogPf(logLvl int, prefix string, format string, v ...interface{}) {
 }
 
 // When you want to use the log short filename flag, and want to use
-// the lower level logginf functions (say from an *Assert* type function
+// the lower level logging functions (say from an *Assert* type function)
 // you need to modify the stack depth:
 //
-// 	   SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile|log.Lmicroseconds), lvl)
+//     func init() {}
+// 	       SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile|log.Lmicroseconds), lvl)
+//     }
 //
-//     LogD(5, DEBUG, v...)
+//     func assert(t *testing.T, myData) {
+//         // we want log line to show line that called this assert, not this line
+//         LogD(5, DEBUG, v...)
+//     }
 func LogD(depth int, logLvl int, v ...interface{}) {
 	if LogLevel >= logLvl {
 		DoLog(depth, logLvl, fmt.Sprint(v...))
