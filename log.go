@@ -208,7 +208,7 @@ func LogTracef(logLvl int, format string, v ...interface{}) {
 		stackBufLen := runtime.Stack(stackBuf, false)
 		stackTraceStr := string(stackBuf[0:stackBufLen])
 		v = append(v, stackTraceStr)
-		DoLog(4, logLvl, fmt.Sprintf(format+"\n%v", v...))
+		DoLog(5, logLvl, fmt.Sprintf(format+"\n%v", v...))
 	}
 }
 
