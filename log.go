@@ -204,11 +204,14 @@ func Log(logLvl int, v ...interface{}) {
 func LogTracef(logLvl int, format string, v ...interface{}) {
 	if LogLevel >= logLvl {
 		// grab a stack trace
-		stackBuf := make([]byte, 4096)
+		stackBuf := make([]byte, 6000)
 		stackBufLen := runtime.Stack(stackBuf, false)
 		stackTraceStr := string(stackBuf[0:stackBufLen])
-		v = append(v, stackTraceStr)
-		DoLog(5, logLvl, fmt.Sprintf(format+"\n%v", v...))
+		parts := strings.Split(stackTraceStr, "\n")
+		if len(parts) > 1 {
+			v = append(v, strings.Join(parts[3:len(parts)], "\n"))
+		}
+		DoLog(4, logLvl, fmt.Sprintf(format+"\n%v", v...))
 	}
 }
 
