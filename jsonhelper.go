@@ -461,6 +461,13 @@ func (j JsonHelper) PrettyJson() []byte {
 	jsonPretty, _ := json.MarshalIndent(j, "  ", "  ")
 	return jsonPretty
 }
+func (j JsonHelper) Keys() []string {
+	keys := make([]string, 0)
+	for key, _ := range j {
+		keys = append(keys, key)
+	}
+	return keys
+}
 
 // The following consts are from http://code.google.com/p/go-bit/ (Apache licensed). It
 // lets us figure out how wide go ints are, and determine their max and min values.
