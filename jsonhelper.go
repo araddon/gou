@@ -249,23 +249,27 @@ func (j JsonHelper) Get(n string) interface{} {
 
 // Get a Helper from a string path
 func (j JsonHelper) Helper(n string) JsonHelper {
-	if v, ok := j[n]; ok {
-		switch v.(type) {
-		case map[string]interface{}:
-			cn := JsonHelper{}
-			for n, val := range v.(map[string]interface{}) {
-				cn[n] = val
-			}
-			return cn
-		case map[string]string:
-			cn := JsonHelper{}
-			for n, val := range v.(map[string]string) {
-				cn[n] = val
-			}
-			return cn
-		case JsonHelper:
-			return v.(JsonHelper)
+	v := j.Get(n)
+	if v == nil {
+		return nil
+	}
+	switch vt := v.(type) {
+	case map[string]interface{}:
+		cn := JsonHelper{}
+		for n, val := range vt {
+			cn[n] = val
 		}
+		return cn
+	case map[string]string:
+		cn := JsonHelper{}
+		for n, val := range vt {
+			cn[n] = val
+		}
+		return cn
+	case JsonHelper:
+		return vt
+	default:
+		//Infof("wrong type: %T", v)
 	}
 	return nil
 }
