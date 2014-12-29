@@ -316,14 +316,17 @@ func (j JsonHelper) List(n string) []interface{} {
 	}
 	return nil
 }
-
-// Get Int64
 func (j JsonHelper) Int64(n string) int64 {
 	i64, ok := j.Int64Safe(n)
 	if !ok {
 		return -1
 	}
 	return i64
+}
+func (j JsonHelper) Float64(n string) float64 {
+	v := j.Get(n)
+	f64, _ := CoerceFloat(v)
+	return f64
 }
 func (j JsonHelper) String(n string) string {
 	if v := j.Get(n); v != nil {
@@ -395,8 +398,8 @@ func (j JsonHelper) Int(n string) int {
 func (j JsonHelper) Int64Safe(n string) (int64, bool) {
 	v := j.Get(n)
 	return valToInt64(v)
-
 }
+
 func (j JsonHelper) IntSafe(n string) (int, bool) {
 	v := j.Get(n)
 	return valToInt(v)
