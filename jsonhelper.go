@@ -231,7 +231,16 @@ func (j JsonHelper) Get(n string) interface{} {
 		}
 		//Debug(isList, listEntry, " ", name, " ", root, " ", ok, err)
 		if !ok {
-			return nil
+			if len(parts) > 0 {
+				// lets ensure the actual json-value doesn't have period in key
+				root, ok = j[n]
+				if !ok {
+					return nil
+				}
+			} else {
+				return nil
+			}
+
 		}
 		if isList {
 			return jsonList(root)
