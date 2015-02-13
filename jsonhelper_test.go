@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	. "github.com/araddon/gou/goutest"
+	"github.com/bmizerany/assert"
 	"log"
 	"os"
 	"strings"
@@ -27,6 +28,8 @@ func init() {
 		"int":1,
 		"intstr":"1",
 		"int64":1234567890,
+		"float64":123.456,
+		"float64str":"123.456",
 		"MaxSize" : 1048576,
 		"strings":["string1"],
 		"stringscsv":"string1,string2",
@@ -100,6 +103,15 @@ func TestJsonHelper(t *testing.T) {
 
 	l := jh.List("nested2")
 	Assert(len(l) == 1, t, "get list")
+
+	fv, ok := jh.Float64Safe("name")
+	assert.Tf(t, !ok, "floatsafe not ok")
+	fv, ok = jh.Float64Safe("float64")
+	assert.Tf(t, ok, "floatsafe ok")
+	assert.Tf(t, CloseEnuf(fv, 123.456), "floatsafe value %v", fv)
+	fv, ok = jh.Float64Safe("float64str")
+	assert.Tf(t, ok, "floatsafe ok")
+	assert.Tf(t, CloseEnuf(fv, 123.456), "floatsafe value %v", fv)
 
 	jhm := jh.Helpers("nested2")
 	Assert(len(jhm) == 1, t, "get list of helpers")

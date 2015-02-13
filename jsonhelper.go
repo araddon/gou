@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -325,18 +326,7 @@ func (j JsonHelper) List(n string) []interface{} {
 	}
 	return nil
 }
-func (j JsonHelper) Int64(n string) int64 {
-	i64, ok := j.Int64Safe(n)
-	if !ok {
-		return -1
-	}
-	return i64
-}
-func (j JsonHelper) Float64(n string) float64 {
-	v := j.Get(n)
-	f64, _ := CoerceFloat(v)
-	return f64
-}
+
 func (j JsonHelper) String(n string) string {
 	if v := j.Get(n); v != nil {
 		val, _ := CoerceString(v)
@@ -397,6 +387,7 @@ func (j JsonHelper) StringSafe(n string) (string, bool) {
 	}
 	return "", false
 }
+
 func (j JsonHelper) Int(n string) int {
 	i, ok := j.IntSafe(n)
 	if !ok {
@@ -404,14 +395,41 @@ func (j JsonHelper) Int(n string) int {
 	}
 	return i
 }
+
+func (j JsonHelper) IntSafe(n string) (int, bool) {
+	v := j.Get(n)
+	return valToInt(v)
+}
+
+func (j JsonHelper) Int64(n string) int64 {
+	i64, ok := j.Int64Safe(n)
+	if !ok {
+		return -1
+	}
+	return i64
+}
+
 func (j JsonHelper) Int64Safe(n string) (int64, bool) {
 	v := j.Get(n)
 	return valToInt64(v)
 }
 
-func (j JsonHelper) IntSafe(n string) (int, bool) {
+func (j JsonHelper) Float64(n string) float64 {
 	v := j.Get(n)
-	return valToInt(v)
+	f64, _ := CoerceFloat(v)
+	return f64
+}
+
+func (j JsonHelper) Float64Safe(n string) (float64, bool) {
+	v := j.Get(n)
+	if v == nil {
+		return math.NaN(), false
+	}
+	fv, err := CoerceFloat(v)
+	if err != nil {
+		return math.NaN(), false
+	}
+	return fv, true
 }
 
 func (j JsonHelper) Uint64(n string) uint64 {
@@ -446,7 +464,6 @@ func (j JsonHelper) Bool(n string) bool {
 	}
 
 	return val
-
 }
 
 func (j JsonHelper) Map(n string) map[string]interface{} {
