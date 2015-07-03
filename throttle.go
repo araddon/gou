@@ -19,7 +19,7 @@ type Throttler struct {
 }
 
 // new Throttler that will tell you to limit or not based
-// on given max events per second input @limit
+// on given @max events @per duration
 func NewThrottler(max int, per time.Duration) *Throttler {
 	return &Throttler{
 		maxPer:    float64(max),
