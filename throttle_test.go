@@ -8,13 +8,13 @@ import (
 )
 
 func TestThrottleer(t *testing.T) {
-	th := NewThrottler(10, 10)
+	th := NewThrottler(10, 10*time.Second)
 	for i := 0; i < 10; i++ {
 		assert.Tf(t, th.Throttle() == false, "Should not throttle %v", i)
 		time.Sleep(time.Millisecond * 10)
 	}
 	throttled := 0
-	th = NewThrottler(10, 1)
+	th = NewThrottler(10, 1*time.Second)
 	// We are going to loop 20 times, first 10 should make it, next 10 throttled
 	for i := 0; i < 20; i++ {
 		LogThrottleKey(WARN, 10, "throttle", "hello %v", i)

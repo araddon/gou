@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -237,7 +238,7 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 		throttleMu.Lock()
 		th, ok := logThrottles[key]
 		if !ok {
-			th = NewThrottler(limit, 3600)
+			th = NewThrottler(limit, 3600*time.Second)
 			logThrottles[key] = th
 		}
 		if th.Throttle() {
@@ -259,7 +260,7 @@ func LogThrottle(logLvl, limit int, format string, v ...interface{}) {
 		throttleMu.Lock()
 		th, ok := logThrottles[format]
 		if !ok {
-			th = NewThrottler(limit, 3600)
+			th = NewThrottler(limit, 3600*time.Second)
 			logThrottles[format] = th
 		}
 		if th.Throttle() {
