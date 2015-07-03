@@ -24,3 +24,86 @@ func TestThrottleer(t *testing.T) {
 	}
 	assert.Tf(t, throttled == 10, "Should throttle 10 of 20 requests: %v", throttled)
 }
+
+func TestThrottle(t *testing.T) {
+	throttled := 0
+	th := NewThrottler(10, 1)
+	for i := 0; i < 20; i++ {
+		LogThrottle(WARN, 10, "throttle", "hihi %v", i)
+		if th.Throttle() {
+			throttled++
+		}
+	}
+	assert.Tf(t, throttled == 10, "Should throttle 10 of 20 requests: %v", throttled)
+}
+
+func TestThrottleLow(t *testing.T) {
+	throttled := 0
+	th := NewThrottler(100, 1)
+	start := time.Now()
+	for i := 0; i < 200; i++ {
+		LogThrottle(WARN, 100, "throttle", "hihi %v", i)
+		if th.Throttle() {
+			throttled++
+		}
+	}
+	Infof("Time taken Low: %v\n\n", time.Since(start))
+	assert.Tf(t, throttled == 100, "Should throttle 100 of 200 requests: %v", throttled)
+}
+
+func TestThrottleMed(t *testing.T) {
+	throttled := 0
+	th := NewThrottler(1000, 1)
+	start := time.Now()
+	for i := 0; i < 2000; i++ {
+		LogThrottle(WARN, 1000, "throttle", "hihi %v", i)
+		if th.Throttle() {
+			throttled++
+		}
+	}
+	Infof("Time taken Med: %v\n\n", time.Since(start))
+	assert.Tf(t, throttled == 1000, "Should throttle 1000 of 2000 requests: %v", throttled)
+}
+
+func TestThrottleBig(t *testing.T) {
+	throttled := 0
+	start := time.Now()
+	th := NewThrottler(10000, 1)
+	for i := 0; i < 20000; i++ {
+		LogThrottle(WARN, 10000, "throttle", "hihi %v", i)
+		if th.Throttle() {
+			throttled++
+		}
+	}
+	Infof("Time taken Big: %v\n\n", time.Since(start))
+	assert.Tf(t, throttled == 10000, "Should throttle 10000 of 20000 requests: %v", throttled)
+}
+
+func TestThrottleBigger(t *testing.T) {
+	throttled := 0
+	th := NewThrottler(100000, 1)
+	start := time.Now()
+	for i := 0; i < 200000; i++ {
+		LogThrottle(WARN, 100000, "throttle", "hihi %v", i)
+		if th.Throttle() {
+			throttled++
+		}
+	}
+	Infof("Time taken: %v\n\n", time.Since(start))
+	assert.Tf(t, throttled == 100000, "Should throttle 100000 of 200000 requests: %v", throttled)
+}
+
+func TestThrottleAbsurd(t *testing.T) {
+	throttled := 0
+	start := time.Now()
+	th := NewThrottler(1000000, 1)
+	for i := 0; i < 2000000; i++ {
+		LogThrottle(WARN, 1000000, "throttle", "hihihihi %v", i)
+		//fmt.Printf("Wat: %v\n", throttled)
+		if th.Throttle() {
+			throttled++
+		}
+	}
+	Infof("Time taken: %v\n\n", time.Since(start))
+	assert.Tf(t, throttled == 1000000, "Should throttle 1000000 of 2000000 requests, but seems to break limiting algorithm: %v", throttled)
+}
