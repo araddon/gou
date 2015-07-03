@@ -249,6 +249,28 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 	}
 }
 
+// Throttle logging based on @format as a key, such that key would never occur more than
+//   @limit times per minute
+//
+//    LogThrottle(u.ERROR, 1, "message %s", varx)
+//
+func LogThrottle(logLvl, limit int, format string, v ...interface{}) {
+	if LogLevel >= logLvl {
+		throttleMu.Lock()
+		th, ok := logThrottles[format]
+		if !ok {
+			th = NewThrottler(limit, 60)
+			logThrottles[format] = th
+		}
+		if th.Throttle() {
+			throttleMu.Unlock()
+			return
+		}
+		throttleMu.Unlock()
+		DoLog(4, logLvl, fmt.Sprintf(format, v...))
+	}
+}
+
 // Log to logger if setup
 //    Logf(ERROR, "message %d", 20)
 func Logf(logLvl int, format string, v ...interface{}) {
