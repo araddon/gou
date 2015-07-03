@@ -228,7 +228,7 @@ func LogTracef(logLvl int, format string, v ...interface{}) {
 }
 
 // Throttle logging based on key, such that key would never occur more than
-//   @limit times per minute
+//   @limit times per hour
 //
 //    LogThrottleKey(u.ERROR, 1,"error_that_happens_a_lot" "message %s", varx)
 //
@@ -237,7 +237,7 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 		throttleMu.Lock()
 		th, ok := logThrottles[key]
 		if !ok {
-			th = NewThrottler(limit, 60)
+			th = NewThrottler(limit, 3600)
 			logThrottles[key] = th
 		}
 		if th.Throttle() {
@@ -250,7 +250,7 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 }
 
 // Throttle logging based on @format as a key, such that key would never occur more than
-//   @limit times per minute
+//   @limit times per hour
 //
 //    LogThrottle(u.ERROR, 1, "message %s", varx)
 //
@@ -259,7 +259,7 @@ func LogThrottle(logLvl, limit int, format string, v ...interface{}) {
 		throttleMu.Lock()
 		th, ok := logThrottles[format]
 		if !ok {
-			th = NewThrottler(limit, 60)
+			th = NewThrottler(limit, 3600)
 			logThrottles[format] = th
 		}
 		if th.Throttle() {
