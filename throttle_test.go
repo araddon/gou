@@ -27,7 +27,7 @@ func TestThrottleer(t *testing.T) {
 
 func TestThrottle(t *testing.T) {
 	throttled := 0
-	th := NewThrottler(10, 1)
+	th := NewThrottler(10, 1*time.Second)
 	for i := 0; i < 20; i++ {
 		LogThrottle(WARN, 10, "throttle", "hihi %v", i)
 		if th.Throttle() {
@@ -39,7 +39,7 @@ func TestThrottle(t *testing.T) {
 
 func TestThrottleLow(t *testing.T) {
 	throttled := 0
-	th := NewThrottler(100, 1)
+	th := NewThrottler(100, 1*time.Second)
 	start := time.Now()
 	for i := 0; i < 200; i++ {
 		LogThrottle(WARN, 100, "throttle", "hihi %v", i)
@@ -53,7 +53,7 @@ func TestThrottleLow(t *testing.T) {
 
 func TestThrottleMed(t *testing.T) {
 	throttled := 0
-	th := NewThrottler(1000, 1)
+	th := NewThrottler(1000, 1*time.Second)
 	start := time.Now()
 	for i := 0; i < 2000; i++ {
 		LogThrottle(WARN, 1000, "throttle", "hihi %v", i)
@@ -68,7 +68,7 @@ func TestThrottleMed(t *testing.T) {
 func TestThrottleBig(t *testing.T) {
 	throttled := 0
 	start := time.Now()
-	th := NewThrottler(10000, 1)
+	th := NewThrottler(10000, 1*time.Second)
 	for i := 0; i < 20000; i++ {
 		LogThrottle(WARN, 10000, "throttle", "hihi %v", i)
 		if th.Throttle() {
@@ -81,7 +81,7 @@ func TestThrottleBig(t *testing.T) {
 
 func TestThrottleBigger(t *testing.T) {
 	throttled := 0
-	th := NewThrottler(100000, 1)
+	th := NewThrottler(100000, 1*time.Second)
 	start := time.Now()
 	for i := 0; i < 200000; i++ {
 		LogThrottle(WARN, 100000, "throttle", "hihi %v", i)
@@ -96,7 +96,7 @@ func TestThrottleBigger(t *testing.T) {
 func TestThrottleAbsurd(t *testing.T) {
 	throttled := 0
 	start := time.Now()
-	th := NewThrottler(1000000, 1)
+	th := NewThrottler(1000000, 1*time.Second)
 	for i := 0; i < 2000000; i++ {
 		LogThrottle(WARN, 1000000, "throttle", "hihihihi %v", i)
 		//fmt.Printf("Wat: %v\n", throttled)
