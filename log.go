@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 const (
@@ -57,6 +58,8 @@ var (
 	}
 	postFix                      = "" //\033[0m
 	LogLevelWords map[string]int = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
+	logThrottles                 = make(map[string]*Throttler)
+	throttleMu    sync.Mutex
 )
 
 // Setup default logging to Stderr, equivalent to:
@@ -221,6 +224,28 @@ func LogTracef(logLvl int, format string, v ...interface{}) {
 			v = append(v, strings.Join(parts[3:len(parts)], "\n"))
 		}
 		DoLog(4, logLvl, fmt.Sprintf(format+"\n%v", v...))
+	}
+}
+
+// Throttle logging based on key, such that key would never occur more than
+//   @limit times per minute
+//
+//    LogThrottleKey(u.ERROR, 1,"error_that_happens_a_lot" "message %s", varx)
+//
+func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
+	if LogLevel >= logLvl {
+		throttleMu.Lock()
+		th, ok := logThrottles[key]
+		if !ok {
+			th = NewThrottler(limit, 60)
+			logThrottles[key] = th
+		}
+		if th.Throttle() {
+			throttleMu.Unlock()
+			return
+		}
+		throttleMu.Unlock()
+		DoLog(4, logLvl, fmt.Sprintf(format, v...))
 	}
 }
 
