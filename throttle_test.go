@@ -23,4 +23,8 @@ func TestThrottleer(t *testing.T) {
 		}
 	}
 	assert.Tf(t, throttled == 10, "Should throttle 10 of 20 requests: %v", throttled)
+	// Now sleep for 1 second so that we should
+	// no longer be throttled
+	time.Sleep(time.Second * 1)
+	assert.Tf(t, th.Throttle() == false, "We should not have been throttled")
 }
