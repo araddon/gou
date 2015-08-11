@@ -570,6 +570,12 @@ func (j JsonHelper) Keys() []string {
 	}
 	return keys
 }
+func (j JsonHelper) HasKey(name string) bool {
+	if val := j.Get(name); val != nil {
+		return true
+	}
+	return false
+}
 
 // The following consts are from http://code.google.com/p/go-bit/ (Apache licensed). It
 // lets us figure out how wide go ints are, and determine their max and min values.
