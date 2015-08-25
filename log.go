@@ -1,6 +1,7 @@
 package gou
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mattbaird/elastigo/lib"
 )
 
 const (
@@ -57,10 +60,14 @@ var (
 		INFO:  "[INFO] ",
 		DEBUG: "[DEBUG] ",
 	}
-	postFix                      = "" //\033[0m
-	LogLevelWords map[string]int = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
-	logThrottles                 = make(map[string]*Throttler)
-	throttleMu    sync.Mutex
+	escapeNewlines                = bool
+	postFix                       = "" //\033[0m
+	LogLevelWords  map[string]int = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
+	logThrottles                  = make(map[string]*Throttler)
+	throttleMu     sync.Mutex
+
+	indexer *elastigo.BulkIndexer
+	econn   *elastigo.Conn
 )
 
 // Setup default logging to Stderr, equivalent to:
@@ -75,6 +82,19 @@ func SetupLogging(lvl string) {
 //	gou.SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), level)
 func SetupLoggingLong(lvl string) {
 	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Llongfile|log.Lmicroseconds), strings.ToLower(lvl))
+}
+
+func SetupLoggingDestinations(hosts []string) {
+	elastigoConn = elastigo.NewConn()
+	esHost := strings.Replace(hosts, ":9200", "", -1)
+	elastigoConn.SetHosts([]string{esHost})
+	indexer := elastigoConn.NewBulkIndexerErrors(5, 120)
+	indexer.Sender = func(buf *bytes.Buffer) error {
+		log.Infof("es writing: %d bytes", buf.Len())
+		return indexer.Send(buf)
+	}
+	indexer.Start()
+	econn = elastigoConn
 }
 
 // Setup colorized output if this is a terminal
@@ -320,10 +340,21 @@ func LogD(depth int, logLvl int, v ...interface{}) {
 
 // Low level log with depth , level, message and logger
 func DoLog(depth, logLvl int, msg string) {
+	if escapeNewlines {
+		msg = EscapeNewlines(msg)
+	}
 	if ErrLogLevel >= logLvl && loggerErr != nil {
 		loggerErr.Output(depth, LogPrefix[logLvl]+msg+postFix)
 	} else if LogLevel >= logLvl && logger != nil {
 		logger.Output(depth, LogPrefix[logLvl]+msg+postFix)
+	} else if LogLevel >= logLvl && logger != nil || loggerErr != nil {
+		if logger != nil {
+			//(index string, _type string, id, ttl string, date *time.Time, data interface{}, refresh bool)
+
+			now := time.Now()
+			idx := "logstash-" + now.Format("2006.01.02")
+			indexer.Index(idx, "golog", "hihid", "30d", now, LogPrefix[logLvl]+msg+postFix, nil)
+		}
 	}
 }
 
@@ -344,4 +375,10 @@ type DevNull struct{}
 
 func (DevNull) Write(p []byte) (int, error) {
 	return len(p), nil
+}
+
+//Replace standard newline characters with escaped newlines so long msgs will
+//remain one line.
+func EscapeNewlines(str string) string {
+	return strings.Replace(str, "\n", "\\n", -1)
 }
