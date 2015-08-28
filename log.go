@@ -57,7 +57,7 @@ var (
 		INFO:  "[INFO] ",
 		DEBUG: "[DEBUG] ",
 	}
-	escapeNewlines bool           = true
+	escapeNewlines bool           = false
 	postFix                       = "" //\033[0m
 	LogLevelWords  map[string]int = map[string]int{"fatal": 0, "error": 1, "warn": 2, "info": 3, "debug": 4, "none": -1}
 	logThrottles                  = make(map[string]*Throttler)
@@ -91,6 +91,11 @@ func SetColorOutput() {
 		LogPrefix[lvl] = color
 	}
 	postFix = "\033[0m"
+}
+
+//Set whether to escape newline characters in log messages
+func EscapeNewlines(en bool) {
+	escapeNewlines = en
 }
 
 // Setup default log output to go to a dev/null
