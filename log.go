@@ -94,7 +94,7 @@ func SetColorOutput() {
 }
 
 //Set whether to escape newline characters in log messages
-func EscapeNewlines(en bool) {
+func SetEscapeNewlines(en bool) {
 	escapeNewlines = en
 }
 
