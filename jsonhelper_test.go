@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"math"
 	"strings"
 	"testing"
 
@@ -20,6 +21,7 @@ var (
 
 func init() {
 	SetupLogging("debug")
+	SetColorOutput()
 	//SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), "debug")
 	// create test data
 	json.Unmarshal([]byte(`{
@@ -31,6 +33,7 @@ func init() {
 		"int64":1234567890,
 		"float64":123.456,
 		"float64str":"123.456",
+		"float64null": null,
 		"MaxSize" : 1048576,
 		"strings":["string1"],
 		"stringscsv":"string1,string2",
@@ -118,9 +121,18 @@ func TestJsonHelper(t *testing.T) {
 	fv, ok = jh.Float64Safe("float64")
 	assert.Tf(t, ok, "floatsafe ok")
 	assert.Tf(t, CloseEnuf(fv, 123.456), "floatsafe value %v", fv)
+	fv = jh.Float64("float64")
+	assert.Tf(t, CloseEnuf(fv, 123.456), "floatsafe value %v", fv)
 	fv, ok = jh.Float64Safe("float64str")
 	assert.Tf(t, ok, "floatsafe ok")
 	assert.Tf(t, CloseEnuf(fv, 123.456), "floatsafe value %v", fv)
+	fv = jh.Float64("float64str")
+	assert.Tf(t, CloseEnuf(fv, 123.456), "floatsafe value %v", fv)
+	fv, ok = jh.Float64Safe("float64null")
+	assert.Tf(t, ok, "float64null ok")
+	assert.Tf(t, math.IsNaN(fv), "float64null expected Nan but got %v", fv)
+	fv = jh.Float64("float64null")
+	assert.Tf(t, math.IsNaN(fv), "float64null expected Nan but got %v", fv)
 
 	jhm := jh.Helpers("nested2")
 	Assert(len(jhm) == 1, t, "get list of helpers")
