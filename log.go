@@ -283,7 +283,7 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 		throttleMu.Unlock()
 
 		if throttleCount > 0 {
-			format = fmt.Sprintf("LogsThrottled[%d] %s", throttleCount, format)
+			format = fmt.Sprintf("%s LogsThrottled[%d]", format, throttleCount)
 		}
 		DoLog(3, logLvl, fmt.Sprintf(format, v...))
 	}
@@ -311,7 +311,7 @@ func LogThrottle(logLvl, limit int, format string, v ...interface{}) {
 		throttleMu.Unlock()
 
 		if throttleCount > 0 {
-			format = fmt.Sprintf("LogsThrottled[%d] %s", throttleCount, format)
+			format = fmt.Sprintf("%s LogsThrottled[%d]", format, throttleCount)
 		}
 		DoLog(3, logLvl, fmt.Sprintf(format, v...))
 	}
