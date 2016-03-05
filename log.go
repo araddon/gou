@@ -316,11 +316,16 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 			th = NewThrottler(limit, 3600*time.Second)
 			logThrottles[key] = th
 		}
-		if th.Throttle() {
+		skip, throttleCount := th.Throttle()
+		if skip {
 			throttleMu.Unlock()
 			return
 		}
 		throttleMu.Unlock()
+
+		if throttleCount > 0 {
+			format = fmt.Sprintf("%s LogsThrottled[%d]", format, throttleCount)
+		}
 		DoLog(3, logLvl, fmt.Sprintf(format, v...))
 	}
 }
@@ -338,11 +343,17 @@ func LogThrottle(logLvl, limit int, format string, v ...interface{}) {
 			th = NewThrottler(limit, 3600*time.Second)
 			logThrottles[format] = th
 		}
-		if th.Throttle() {
+		var throttleCount int32
+		skip, throttleCount := th.Throttle()
+		if skip {
 			throttleMu.Unlock()
 			return
 		}
 		throttleMu.Unlock()
+
+		if throttleCount > 0 {
+			format = fmt.Sprintf("%s LogsThrottled[%d]", format, throttleCount)
+		}
 		DoLog(3, logLvl, fmt.Sprintf(format, v...))
 	}
 }
@@ -360,11 +371,14 @@ func LogThrottleD(depth, logLvl, limit int, format string, v ...interface{}) {
 			th = NewThrottler(limit, 3600*time.Second)
 			logThrottles[format] = th
 		}
-		if th.Throttle() {
+		skip, throttleCount := th.Throttle()
+		if skip {
 			throttleMu.Unlock()
 			return
 		}
 		throttleMu.Unlock()
+
+		format = fmt.Sprintf("Log Throttled[%d] %s", throttleCount, format)
 		DoLog(depth, logLvl, fmt.Sprintf(format, v...))
 	}
 }
