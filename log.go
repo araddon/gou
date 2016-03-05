@@ -159,7 +159,7 @@ func Debugf(format string, v ...interface{}) {
 
 func DebugT(lineCt int) {
 	if LogLevel >= 4 {
-		DoLog(3, DEBUG, PrettyStack(lineCt))
+		DoLog(3, DEBUG, fmt.Sprint("\n", PrettyStack(lineCt)))
 	}
 }
 
@@ -180,7 +180,7 @@ func Infof(format string, v ...interface{}) {
 // Info Trace
 func InfoT(lineCt int) {
 	if LogLevel >= 3 {
-		DoLog(3, DEBUG, PrettyStack(lineCt))
+		DoLog(3, INFO, fmt.Sprint("\n", PrettyStack(lineCt)))
 	}
 }
 
@@ -201,7 +201,7 @@ func Warnf(format string, v ...interface{}) {
 // Warn Trace
 func WarnT(lineCt int) {
 	if LogLevel >= 2 {
-		DoLog(3, DEBUG, PrettyStack(lineCt))
+		DoLog(3, WARN, fmt.Sprint("\n", PrettyStack(lineCt)))
 	}
 }
 
@@ -283,14 +283,14 @@ func LogTraceDf(logLvl, lineCt int, format string, v ...interface{}) {
 }
 
 func PrettyStack(lineCt int) string {
-	stackBuf := make([]byte, 8000)
+	stackBuf := make([]byte, 10000)
 	stackBufLen := runtime.Stack(stackBuf, false)
 	stackTraceStr := string(stackBuf[0:stackBufLen])
 	parts := strings.Split(stackTraceStr, "\n")
 	if len(parts) > 3 {
 		parts = parts[2:]
 		parts2 := make([]string, 0, len(parts)/2)
-		for i := 0; i < len(parts)-1; i++ {
+		for i := 3; i < len(parts)-1; i++ {
 			if !strings.HasSuffix(parts[i], ")") && !strings.HasPrefix(parts[i], "/usr/local") {
 				parts2 = append(parts2, parts[i])
 			}
