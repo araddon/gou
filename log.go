@@ -157,6 +157,12 @@ func Debugf(format string, v ...interface{}) {
 	}
 }
 
+func DebugT(lineCt int) {
+	if LogLevel >= 4 {
+		DoLog(3, DEBUG, PrettyStack(lineCt))
+	}
+}
+
 // Log at info level
 func Info(v ...interface{}) {
 	if LogLevel >= 3 {
@@ -171,6 +177,13 @@ func Infof(format string, v ...interface{}) {
 	}
 }
 
+// Info Trace
+func InfoT(lineCt int) {
+	if LogLevel >= 3 {
+		DoLog(3, DEBUG, PrettyStack(lineCt))
+	}
+}
+
 // Log at warn level
 func Warn(v ...interface{}) {
 	if LogLevel >= 2 {
@@ -182,6 +195,13 @@ func Warn(v ...interface{}) {
 func Warnf(format string, v ...interface{}) {
 	if LogLevel >= 2 {
 		DoLog(3, WARN, fmt.Sprintf(format, v...))
+	}
+}
+
+// Warn Trace
+func WarnT(lineCt int) {
+	if LogLevel >= 2 {
+		DoLog(3, DEBUG, PrettyStack(lineCt))
 	}
 }
 
@@ -260,6 +280,27 @@ func LogTraceDf(logLvl, lineCt int, format string, v ...interface{}) {
 		}
 		DoLog(3, logLvl, fmt.Sprintf(format+"\n%v", v...))
 	}
+}
+
+func PrettyStack(lineCt int) string {
+	stackBuf := make([]byte, 8000)
+	stackBufLen := runtime.Stack(stackBuf, false)
+	stackTraceStr := string(stackBuf[0:stackBufLen])
+	parts := strings.Split(stackTraceStr, "\n")
+	if len(parts) > 3 {
+		parts = parts[2:]
+		parts2 := make([]string, 0, len(parts)/2)
+		for i := 0; i < len(parts)-1; i++ {
+			if !strings.HasSuffix(parts[i], ")") && !strings.HasPrefix(parts[i], "/usr/local") {
+				parts2 = append(parts2, parts[i])
+			}
+		}
+		if len(parts2) > lineCt {
+			return strings.Join(parts2[0:lineCt], "\n")
+		}
+		return strings.Join(parts2, "\n")
+	}
+	return stackTraceStr
 }
 
 // Throttle logging based on key, such that key would never occur more than
