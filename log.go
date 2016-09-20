@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 const (
@@ -44,6 +46,7 @@ var (
 	EMPTY       struct{}
 	ErrLogLevel int = ERROR
 	logger      *log.Logger
+	rus         *logrus.Logger
 	loggerErr   *log.Logger
 	LogColor    = map[int]string{FATAL: "\033[0m\033[37m",
 		ERROR: "\033[0m\033[31m",
@@ -76,6 +79,24 @@ func SetupLogging(lvl string) {
 //	gou.SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), level)
 func SetupLoggingLong(lvl string) {
 	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Llongfile|log.Lmicroseconds), strings.ToLower(lvl))
+}
+
+func SetupLogrus(lvl string) {
+	loglvl, err := logrus.ParseLevel(lvl)
+	if err != nil {
+		fmt.Printf("error parsing log level: %v", err)
+	}
+
+	rus = &logrus.Logger{
+		Out:       os.Stdout,
+		Formatter: new(logrus.JSONFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     loglvl,
+	}
+}
+
+func GetRus() *logrus.Logger {
+	return rus
 }
 
 // Setup colorized output if this is a terminal
@@ -434,10 +455,31 @@ func DoLog(depth, logLvl int, msg string) {
 	if escapeNewlines {
 		msg = EscapeNewlines(msg)
 	}
-	if ErrLogLevel >= logLvl && loggerErr != nil {
-		loggerErr.Output(depth, LogPrefix[logLvl]+msg+postFix)
-	} else if LogLevel >= logLvl && logger != nil {
-		logger.Output(depth, LogPrefix[logLvl]+msg+postFix)
+
+	if rus == nil {
+		// Use standard logger
+		if ErrLogLevel >= logLvl && loggerErr != nil {
+			loggerErr.Output(depth, LogPrefix[logLvl]+msg+postFix)
+		} else if LogLevel >= logLvl && logger != nil {
+			logger.Output(depth, LogPrefix[logLvl]+msg+postFix)
+		}
+	} else {
+		// Write logs using Logrus logger
+		logrusLvl := logrus.Level(logLvl) + 1
+		switch logrusLvl {
+		case logrus.FatalLevel:
+			rus.Fatal(msg)
+		case logrus.ErrorLevel:
+			rus.Error(msg)
+		case logrus.WarnLevel:
+			rus.Warn(msg)
+		case logrus.InfoLevel:
+			rus.Info(msg)
+		case logrus.DebugLevel:
+			rus.Debug(msg)
+		default:
+			rus.Warn("!invalid log level! " + msg)
+		}
 	}
 }
 
