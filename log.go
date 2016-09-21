@@ -81,10 +81,13 @@ func SetupLoggingLong(lvl string) {
 	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Llongfile|log.Lmicroseconds), strings.ToLower(lvl))
 }
 
+// SetupLoggingFile writes logs to the file object parameter.
 func SetupLoggingFile(f *os.File, lvl string) {
-	SetLogger(log.New(f, "", log.LstdFlags|log.Llongfile|log.Lmicroseconds), strings.ToLower(lvl))
+	SetLogger(log.New(f, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), strings.ToLower(lvl))
 }
 
+// SetupLogrus initializes an internal logrus.Logger object
+// which will be used for formatting JSON log messages
 func SetupLogrus(lvl string) {
 	loglvl, err := logrus.ParseLevel(lvl)
 	if err != nil {
@@ -99,6 +102,8 @@ func SetupLogrus(lvl string) {
 	}
 }
 
+// SetupLogrusSeverityFormatter initializes an internal logrus.Logger object
+// with the GCP log format compatible SeverityFormatter.
 func SetupLogrusSeverityFormatter(lvl string) {
 	loglvl, err := logrus.ParseLevel(lvl)
 	if err != nil {
@@ -113,6 +118,7 @@ func SetupLogrusSeverityFormatter(lvl string) {
 	}
 }
 
+// GetRus returns the logrus logger if initialized
 func GetRus() *logrus.Logger {
 	return rus
 }
