@@ -15,7 +15,7 @@ func TestSetupLogToFile(t *testing.T) {
 	}
 	defer os.Remove(tmpf.Name())
 
-	//SetupLoggingFile(tmpf, "debug")
+	SetupLoggingFile(tmpf, "debug")
 	logStr := "hihi"
 	Infof(logStr)
 

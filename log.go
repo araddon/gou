@@ -81,6 +81,10 @@ func SetupLoggingLong(lvl string) {
 	SetLogger(log.New(os.Stderr, "", log.LstdFlags|log.Llongfile|log.Lmicroseconds), strings.ToLower(lvl))
 }
 
+func SetupLoggingFile(f *os.File, lvl string) {
+	SetLogger(log.New(f, "", log.LstdFlags|log.Llongfile|log.Lmicroseconds), strings.ToLower(lvl))
+}
+
 func SetupLogrus(lvl string) {
 	loglvl, err := logrus.ParseLevel(lvl)
 	if err != nil {
