@@ -95,6 +95,20 @@ func SetupLogrus(lvl string) {
 	}
 }
 
+func SetupLogrusSeverityFormatter(lvl string) {
+	loglvl, err := logrus.ParseLevel(lvl)
+	if err != nil {
+		fmt.Printf("error parsing log level: %v", err)
+	}
+
+	rus = &logrus.Logger{
+		Out:       os.Stdout,
+		Formatter: new(logrus.SeverityFormatter), //Pass via interface?
+		Hooks:     make(logrus.LevelHooks),
+		Level:     loglvl,
+	}
+}
+
 func GetRus() *logrus.Logger {
 	return rus
 }
