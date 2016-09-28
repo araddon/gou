@@ -87,7 +87,7 @@ func SetupLoggingFile(f *os.File, lvl string) {
 }
 
 // SetupLogrus initializes an internal logrus.Logger object
-// which will be used for formatting JSON log messages
+// with the GCP log format compatible SeverityFormatter.
 func SetupLogrus(lvl string) {
 	loglvl, err := logrus.ParseLevel(lvl)
 	if err != nil {
@@ -96,23 +96,7 @@ func SetupLogrus(lvl string) {
 
 	rus = &logrus.Logger{
 		Out:       os.Stdout,
-		Formatter: new(logrus.JSONFormatter),
-		Hooks:     make(logrus.LevelHooks),
-		Level:     loglvl,
-	}
-}
-
-// SetupLogrusSeverityFormatter initializes an internal logrus.Logger object
-// with the GCP log format compatible SeverityFormatter.
-func SetupLogrusSeverityFormatter(lvl string) {
-	loglvl, err := logrus.ParseLevel(lvl)
-	if err != nil {
-		fmt.Printf("error parsing log level: %v", err)
-	}
-
-	rus = &logrus.Logger{
-		Out:       os.Stdout,
-		Formatter: new(logrus.SeverityFormatter), //Pass via interface?
+		Formatter: new(logrus.SeverityFormatter), //Possible to pass via interface?
 		Hooks:     make(logrus.LevelHooks),
 		Level:     loglvl,
 	}
