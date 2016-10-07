@@ -191,7 +191,7 @@ func Warn(v ...interface{}) {
 	}
 }
 
-// Debug log formatted
+// Warn log formatted
 func Warnf(format string, v ...interface{}) {
 	if LogLevel >= 2 {
 		DoLog(3, WARN, fmt.Sprintf(format, v...))
