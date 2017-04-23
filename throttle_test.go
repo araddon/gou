@@ -4,15 +4,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bmizerany/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestThrottleer(t *testing.T) {
 	th := NewThrottler(10, 10*time.Second)
 	for i := 0; i < 10; i++ {
 		thb, tc := th.Throttle()
-		assert.Tf(t, thb == false, "Should not throttle %v", i)
-		assert.Tf(t, tc < 10, "Throttle count should remain below 10 %v", tc)
+		assert.True(t, thb == false, "Should not throttle %v", i)
+		assert.True(t, tc < 10, "Throttle count should remain below 10 %v", tc)
 		time.Sleep(time.Millisecond * 10)
 	}
 
@@ -25,16 +25,16 @@ func TestThrottleer(t *testing.T) {
 
 		if thb {
 			throttled += 1
-			assert.Tf(t, int(tc) == i-9, "Throttle count should rise %v, i: %d", tc, i)
+			assert.True(t, int(tc) == i-9, "Throttle count should rise %v, i: %d", tc, i)
 		}
 	}
-	assert.Tf(t, throttled == 10, "Should throttle 10 of 20 requests: %v", throttled)
+	assert.True(t, throttled == 10, "Should throttle 10 of 20 requests: %v", throttled)
 
 	// Now sleep for 1 second so that we should
 	// no longer be throttled
 	time.Sleep(time.Second * 2)
 	thb, _ := th.Throttle()
-	assert.Tf(t, thb == false, "We should not have been throttled")
+	assert.True(t, thb == false, "We should not have been throttled")
 }
 
 func TestThrottler2(t *testing.T) {
@@ -61,7 +61,7 @@ func TestThrottler2(t *testing.T) {
 	throttleMu.Lock()
 	th = logThrottles[tkey]
 	tcount := th.ThrottleCount()
-	assert.Tf(t, tcount == 10, "Should throttle 10 of 20 requests: %v", tcount)
+	assert.True(t, tcount == 10, "Should throttle 10 of 20 requests: %v", tcount)
 	throttleMu.Unlock()
 
 	// Now sleep for 1 second so that we should
