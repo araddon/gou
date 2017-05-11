@@ -479,7 +479,7 @@ func DoLog(depth, logLvl int, msg string) {
 			line = 0
 		}
 
-		entry := logrus.WithFields(logrus.Fields{
+		entry := rus.WithFields(logrus.Fields{
 			"file": file,
 			"line": line,
 		})
