@@ -484,7 +484,6 @@ func DoLog(depth, logLvl int, msg string) {
 			"line": line,
 		})
 
-		msg = fmt.Sprintf("%s:%d %s", file, line, msg)
 		// Write logs using Logrus logger
 		logrusLvl := logrus.Level(logLvl) + 1
 		switch logrusLvl {
