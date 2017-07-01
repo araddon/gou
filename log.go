@@ -174,7 +174,8 @@ func LogLevelSet(levelWord string) {
 	}
 }
 
-// NewContext returns a new Context carrying Log context prefix.
+// NewContext returns a new Context carrying contextual log message
+// that gets prefixed to log statements.
 func NewContext(ctx context.Context, msg string) context.Context {
 	return context.WithValue(ctx, logContextKey, msg)
 }
@@ -199,6 +200,17 @@ func Debugf(format string, v ...interface{}) {
 	}
 }
 
+// Debug log formatted context writer
+func DebugCtx(format string, ctx context.Context, v ...interface{}) {
+	if LogLevel >= 4 {
+		lc := FromContext(ctx)
+		if len(lc) > 0 {
+			format = fmt.Sprintf("%s %s", lc, format)
+		}
+		DoLog(3, DEBUG, fmt.Sprintf(format, v...))
+	}
+}
+
 func DebugT(lineCt int) {
 	if LogLevel >= 4 {
 		DoLog(3, DEBUG, fmt.Sprint("\n", PrettyStack(lineCt)))
@@ -215,6 +227,17 @@ func Info(v ...interface{}) {
 // info log formatted
 func Infof(format string, v ...interface{}) {
 	if LogLevel >= 3 {
+		DoLog(3, INFO, fmt.Sprintf(format, v...))
+	}
+}
+
+// Info log formatted context writer
+func InfoCtx(format string, ctx context.Context, v ...interface{}) {
+	if LogLevel >= 3 {
+		lc := FromContext(ctx)
+		if len(lc) > 0 {
+			format = fmt.Sprintf("%s %s", lc, format)
+		}
 		DoLog(3, INFO, fmt.Sprintf(format, v...))
 	}
 }
@@ -240,6 +263,17 @@ func Warnf(format string, v ...interface{}) {
 	}
 }
 
+// Warn log formatted context writer
+func WarnCtx(format string, ctx context.Context, v ...interface{}) {
+	if LogLevel >= 2 {
+		lc := FromContext(ctx)
+		if len(lc) > 0 {
+			format = fmt.Sprintf("%s %s", lc, format)
+		}
+		DoLog(3, WARN, fmt.Sprintf(format, v...))
+	}
+}
+
 // Warn Trace
 func WarnT(lineCt int) {
 	if LogLevel >= 2 {
@@ -257,6 +291,17 @@ func Error(v ...interface{}) {
 // Error log formatted
 func Errorf(format string, v ...interface{}) {
 	if LogLevel >= 1 {
+		DoLog(3, ERROR, fmt.Sprintf(format, v...))
+	}
+}
+
+// Error log formatted context writer
+func ErrorCtx(format string, ctx context.Context, v ...interface{}) {
+	if LogLevel >= 1 {
+		lc := FromContext(ctx)
+		if len(lc) > 0 {
+			format = fmt.Sprintf("%s %s", lc, format)
+		}
 		DoLog(3, ERROR, fmt.Sprintf(format, v...))
 	}
 }
