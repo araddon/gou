@@ -180,6 +180,16 @@ func NewContext(ctx context.Context, msg string) context.Context {
 	return context.WithValue(ctx, logContextKey, msg)
 }
 
+// NewContextWrap returns a new Context carrying contextual log message
+// that gets prefixed to log statements.
+func NewContextWrap(ctx context.Context, msg string) context.Context {
+	logContext, ok := ctx.Value(logContextKey).(string)
+	if ok {
+		return context.WithValue(ctx, logContextKey, fmt.Sprintf("%s %s", logContext, msg))
+	}
+	return context.WithValue(ctx, logContextKey, msg)
+}
+
 // FromContext extracts the Log Context prefix from context
 func FromContext(ctx context.Context) string {
 	logContext, _ := ctx.Value(logContextKey).(string)
@@ -201,7 +211,7 @@ func Debugf(format string, v ...interface{}) {
 }
 
 // Debug log formatted context writer
-func DebugCtx(format string, ctx context.Context, v ...interface{}) {
+func DebugCtx(ctx context.Context, format string, v ...interface{}) {
 	if LogLevel >= 4 {
 		lc := FromContext(ctx)
 		if len(lc) > 0 {
@@ -232,7 +242,7 @@ func Infof(format string, v ...interface{}) {
 }
 
 // Info log formatted context writer
-func InfoCtx(format string, ctx context.Context, v ...interface{}) {
+func InfoCtx(ctx context.Context, format string, v ...interface{}) {
 	if LogLevel >= 3 {
 		lc := FromContext(ctx)
 		if len(lc) > 0 {
@@ -264,7 +274,7 @@ func Warnf(format string, v ...interface{}) {
 }
 
 // Warn log formatted context writer
-func WarnCtx(format string, ctx context.Context, v ...interface{}) {
+func WarnCtx(ctx context.Context, format string, v ...interface{}) {
 	if LogLevel >= 2 {
 		lc := FromContext(ctx)
 		if len(lc) > 0 {
@@ -296,7 +306,7 @@ func Errorf(format string, v ...interface{}) {
 }
 
 // Error log formatted context writer
-func ErrorCtx(format string, ctx context.Context, v ...interface{}) {
+func ErrorCtx(ctx context.Context, format string, v ...interface{}) {
 	if LogLevel >= 1 {
 		lc := FromContext(ctx)
 		if len(lc) > 0 {
