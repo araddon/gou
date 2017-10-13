@@ -326,6 +326,7 @@ func LogErrorf(format string, v ...interface{}) error {
 }
 
 // Log to logger if setup
+//
 //    Log(ERROR, "message")
 func Log(logLvl int, v ...interface{}) {
 	if LogLevel >= logLvl {
@@ -401,7 +402,7 @@ func PrettyStack(lineCt int) string {
 }
 
 // Throttle logging based on key, such that key would never occur more than
-//   @limit times per hour
+// @limit times per hour
 //
 //    LogThrottleKey(u.ERROR, 1,"error_that_happens_a_lot" "message %s", varx)
 //
@@ -420,15 +421,16 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 		}
 		throttleMu.Unlock()
 
+		prefix := ""
 		if throttleCount > 0 {
-			format = fmt.Sprintf("%s LogsThrottled[%d]", format, throttleCount)
+			prefix = fmt.Sprintf("%s LogsThrottled[%d]", throttleCount)
 		}
-		DoLog(3, logLvl, fmt.Sprintf(format, v...))
+		DoLog(3, logLvl, prefix+fmt.Sprintf(format, v...))
 	}
 }
 
 // Throttle logging based on @format as a key, such that key would never occur more than
-//   @limit times per hour
+// @limit times per hour
 //
 //    LogThrottle(u.ERROR, 1, "message %s", varx)
 //
@@ -448,15 +450,16 @@ func LogThrottle(logLvl, limit int, format string, v ...interface{}) {
 		}
 		throttleMu.Unlock()
 
+		prefix := ""
 		if throttleCount > 0 {
-			format = fmt.Sprintf("%s LogsThrottled[%d]", format, throttleCount)
+			prefix = fmt.Sprintf("%s LogsThrottled[%d]", throttleCount)
 		}
-		DoLog(3, logLvl, fmt.Sprintf(format, v...))
+		DoLog(3, logLvl, prefix+fmt.Sprintf(format, v...))
 	}
 }
 
 // Throttle logging based on @format as a key, such that key would never occur more than
-//   @limit times per hour
+// @limit times per hour
 //
 //    LogThrottleD(5, u.ERROR, 1, "message %s", varx)
 //
@@ -475,8 +478,8 @@ func LogThrottleD(depth, logLvl, limit int, format string, v ...interface{}) {
 		}
 		throttleMu.Unlock()
 
-		format = fmt.Sprintf("Log Throttled[%d] %s", throttleCount, format)
-		DoLog(depth, logLvl, fmt.Sprintf(format, v...))
+		prefix := fmt.Sprintf("Log Throttled[%d] ", throttleCount)
+		DoLog(depth, logLvl, prefix+fmt.Sprintf(format, v...))
 	}
 }
 
