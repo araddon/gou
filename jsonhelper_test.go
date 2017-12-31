@@ -138,30 +138,6 @@ func TestJsonHelper(t *testing.T) {
 	assert.True(t, jhm[0].Int("sub") == 2, "Should get list of helpers")
 }
 
-func TestJsonInterface(t *testing.T) {
-
-	var jim map[string]JsonInterface
-	err := json.Unmarshal([]byte(`{
-		"nullstring":null,
-		"string":"string",
-		"int":22,
-		"float":22.2,
-		"floatstr":"22.2",
-		"intstr":"22"
-	}`), &jim)
-	assert.True(t, err == nil, t, "no error:%v ", err)
-	assert.True(t, jim["nullstring"].StringSh() == "", "nullstring: %v", jim["nullstring"])
-	assert.True(t, jim["string"].StringSh() == "string", "nullstring: %v", jim["string"])
-	assert.True(t, jim["int"].IntSh() == 22, "int: %v", jim["int"])
-	assert.True(t, jim["int"].StringSh() == "22", "int->string: %v", jim["int"])
-	assert.True(t, jim["int"].FloatSh() == float32(22), "int->float: %v", jim["int"])
-	assert.True(t, jim["float"].FloatSh() == 22.2, "float: %v", jim["float"])
-	assert.True(t, jim["float"].StringSh() == "22.2", "float->string: %v", jim["float"])
-	assert.True(t, jim["float"].IntSh() == 22, "float->int: %v", jim["float"])
-	assert.True(t, jim["intstr"].IntSh() == 22, "intstr: %v", jim["intstr"])
-	assert.True(t, jim["intstr"].FloatSh() == float32(22), "intstr->float: %v", jim["intstr"])
-}
-
 func TestJsonCoercion(t *testing.T) {
 	assert.True(t, jh.Int("intstr") == 1, "get string as int %s", jh.String("intstr"))
 	assert.True(t, jh.String("int") == "1", "get int as string %s", jh.String("int"))
