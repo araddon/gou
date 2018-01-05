@@ -30,6 +30,11 @@ func CoerceString(v interface{}) (string, error) {
 		return strconv.FormatFloat(float64(val), 'f', -1, 32), nil
 	case float64:
 		return strconv.FormatFloat(val, 'f', -1, 64), nil
+	case bool:
+		if val {
+			return "true", nil
+		}
+		return "false", nil
 	case []byte:
 		if string(val) == "null" || string(val) == "NULL" {
 			return "", nil
