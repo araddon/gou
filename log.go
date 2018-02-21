@@ -423,7 +423,7 @@ func LogThrottleKey(logLvl, limit int, key, format string, v ...interface{}) {
 
 		prefix := ""
 		if throttleCount > 0 {
-			prefix = fmt.Sprintf("%s LogsThrottled[%d]", throttleCount)
+			prefix = fmt.Sprintf("LogsThrottled[%d] ", throttleCount)
 		}
 		DoLog(3, logLvl, prefix+fmt.Sprintf(format, v...))
 	}
@@ -452,7 +452,7 @@ func LogThrottle(logLvl, limit int, format string, v ...interface{}) {
 
 		prefix := ""
 		if throttleCount > 0 {
-			prefix = fmt.Sprintf("%s LogsThrottled[%d]", throttleCount)
+			prefix = fmt.Sprintf("LogsThrottled[%d] ", throttleCount)
 		}
 		DoLog(3, logLvl, prefix+fmt.Sprintf(format, v...))
 	}
