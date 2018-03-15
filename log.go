@@ -491,6 +491,12 @@ func Logf(logLvl int, format string, v ...interface{}) {
 	}
 }
 
+func LogFieldsf(logLvl int, fields map[string]interface{}, format string, v ...interface{}) {
+	if LogLevel >= logLvl {
+		DoLogFields(3, logLvl, fmt.Sprintf(format, v...), fields)
+	}
+}
+
 // Log to logger if setup
 //    LogP(ERROR, "prefix", "message", anyItems, youWant)
 func LogP(logLvl int, prefix string, v ...interface{}) {
@@ -531,6 +537,12 @@ func LogD(depth int, logLvl int, v ...interface{}) {
 
 // Low level log with depth , level, message and logger
 func DoLog(depth, logLvl int, msg string) {
+	DoLogFields(depth, logLvl, msg, nil)
+}
+
+// DoLogFields allows the inclusion of additional context for logrus logs
+// file and line number are included in the fields by default
+func DoLogFields(depth, logLvl int, msg string, fields map[string]interface{}) {
 	if escapeNewlines {
 		msg = EscapeNewlines(msg)
 	}
@@ -550,10 +562,18 @@ func DoLog(depth, logLvl int, msg string) {
 			line = 0
 		}
 
-		entry := rus.WithFields(logrus.Fields{
+		lf := logrus.Fields{
 			"file": file,
 			"line": line,
-		})
+		}
+
+		if fields != nil {
+			for k, v := range fields {
+				lf[k] = v
+			}
+		}
+
+		entry := rus.WithFields(lf)
 
 		// Write logs using Logrus logger
 		logrusLvl := logrus.Level(logLvl) + 1
@@ -572,6 +592,7 @@ func DoLog(depth, logLvl int, msg string) {
 			entry.Warn("!invalid log level! " + msg)
 		}
 	}
+
 }
 
 type winsize struct {
