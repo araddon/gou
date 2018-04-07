@@ -96,7 +96,7 @@ func SetCustomLogger(cl LoggerCustom) {
 	customLogger = cl
 }
 
-// GetRus returns the logrus logger if initialized
+// GetCustomLogger returns the custom logger if initialized
 func GetCustomLogger() LoggerCustom {
 	return customLogger
 }
@@ -535,6 +535,7 @@ func DoLog(depth, logLvl int, msg string) {
 // DoLogFields allows the inclusion of additional context for logrus logs
 // file and line number are included in the fields by default
 func DoLogFields(depth, logLvl int, msg string, fields map[string]interface{}) {
+
 	if escapeNewlines {
 		msg = EscapeNewlines(msg)
 	}
