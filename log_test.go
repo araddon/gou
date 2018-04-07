@@ -38,14 +38,3 @@ func TestSetupLogToFile(t *testing.T) {
 		t.Errorf("%s not found in logfile %s\n", logStr, tmpf.Name())
 	}
 }
-
-func TestLogrusLogger(t *testing.T) {
-	SetupLogrus("debug")
-
-	Debug("Debug")
-	Infof("Info")
-	Warn("Warn")
-	Error("Error")
-
-	rus = nil
-}

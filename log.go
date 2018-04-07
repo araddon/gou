@@ -9,8 +9,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/lytics/logrus"
 )
 
 const (
@@ -43,13 +41,13 @@ LogColor         = map[int]string{FATAL: "\033[0m\033[37m",
 */
 
 var (
-	LogLevel    int = ERROR
-	EMPTY       struct{}
-	ErrLogLevel int = ERROR
-	logger      *log.Logger
-	rus         *logrus.Logger
-	loggerErr   *log.Logger
-	LogColor    = map[int]string{FATAL: "\033[0m\033[37m",
+	LogLevel     int = ERROR
+	EMPTY        struct{}
+	ErrLogLevel  int = ERROR
+	logger       *log.Logger
+	customLogger LoggerCustom
+	loggerErr    *log.Logger
+	LogColor     = map[int]string{FATAL: "\033[0m\033[37m",
 		ERROR: "\033[0m\033[31m",
 		WARN:  "\033[0m\033[33m",
 		INFO:  "\033[0m\033[35m",
@@ -68,6 +66,11 @@ var (
 	logThrottles                  = make(map[string]*Throttler)
 	throttleMu     sync.Mutex
 )
+
+// LoggerCustom defines custom interface for logger implementation
+type LoggerCustom interface {
+	Log(depth, logLevel int, msg string, fields map[string]interface{})
+}
 
 // Setup default logging to Stderr, equivalent to:
 //
@@ -88,25 +91,14 @@ func SetupLoggingFile(f *os.File, lvl string) {
 	SetLogger(log.New(f, "", log.LstdFlags|log.Lshortfile|log.Lmicroseconds), strings.ToLower(lvl))
 }
 
-// SetupLogrus initializes an internal logrus.Logger object
-// with the GCP log format compatible SeverityFormatter.
-func SetupLogrus(lvl string) {
-	loglvl, err := logrus.ParseLevel(lvl)
-	if err != nil {
-		fmt.Printf("error parsing log level: %v", err)
-	}
-
-	rus = &logrus.Logger{
-		Out:       os.Stdout,
-		Formatter: new(logrus.SeverityFormatter), //Possible to pass via interface?
-		Hooks:     make(logrus.LevelHooks),
-		Level:     loglvl,
-	}
+// SetCustomLogger sets the logger to a custom logger
+func SetCustomLogger(cl LoggerCustom) {
+	customLogger = cl
 }
 
 // GetRus returns the logrus logger if initialized
-func GetRus() *logrus.Logger {
-	return rus
+func GetCustomLogger() LoggerCustom {
+	return customLogger
 }
 
 // Setup colorized output if this is a terminal
@@ -547,7 +539,7 @@ func DoLogFields(depth, logLvl int, msg string, fields map[string]interface{}) {
 		msg = EscapeNewlines(msg)
 	}
 
-	if rus == nil {
+	if customLogger == nil {
 		// Use standard logger
 		if ErrLogLevel >= logLvl && loggerErr != nil {
 			loggerErr.Output(depth, LogPrefix[logLvl]+msg+postFix)
@@ -555,44 +547,8 @@ func DoLogFields(depth, logLvl int, msg string, fields map[string]interface{}) {
 			logger.Output(depth, LogPrefix[logLvl]+msg+postFix)
 		}
 	} else {
-		// logrus does not get the line number for us, so add it manually
-		_, file, line, ok := runtime.Caller(depth - 1)
-		if !ok {
-			file = "???"
-			line = 0
-		}
-
-		lf := logrus.Fields{
-			"file": file,
-			"line": line,
-		}
-
-		if fields != nil {
-			for k, v := range fields {
-				lf[k] = v
-			}
-		}
-
-		entry := rus.WithFields(lf)
-
-		// Write logs using Logrus logger
-		logrusLvl := logrus.Level(logLvl) + 1
-		switch logrusLvl {
-		case logrus.FatalLevel:
-			entry.Fatal(msg)
-		case logrus.ErrorLevel:
-			entry.Error(msg)
-		case logrus.WarnLevel:
-			entry.Warn(msg)
-		case logrus.InfoLevel:
-			entry.Info(msg)
-		case logrus.DebugLevel:
-			entry.Debug(msg)
-		default:
-			entry.Warn("!invalid log level! " + msg)
-		}
+		customLogger.Log(depth, logLvl, msg, fields)
 	}
-
 }
 
 type winsize struct {
