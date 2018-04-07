@@ -529,7 +529,7 @@ func LogD(depth int, logLvl int, v ...interface{}) {
 
 // Low level log with depth , level, message and logger
 func DoLog(depth, logLvl int, msg string) {
-	DoLogFields(depth, logLvl, msg, nil)
+	DoLogFields(depth+1, logLvl, msg, nil)
 }
 
 // DoLogFields allows the inclusion of additional context for logrus logs
