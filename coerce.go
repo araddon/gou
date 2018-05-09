@@ -59,6 +59,9 @@ func CoerceStringShort(v interface{}) string {
 func CoerceStrings(v interface{}) []string {
 	switch val := v.(type) {
 	case string:
+		if val == "" {
+			return nil
+		}
 		return strings.Split(val, ",")
 	case []string:
 		return val
