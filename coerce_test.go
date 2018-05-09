@@ -28,6 +28,9 @@ func TestCoerce(t *testing.T) {
 	assert.True(t, CoerceIntShort(data["stringf"]) == 22, "get stringf as int: %v", data["stringf"])
 
 	assert.Equal(t, 0, len(CoerceStrings(data["emptystring"])), "get emptystring as []string: %v", data["emptystring"])
-	assert.Equal(t, []string{"22"}, CoerceStrings(data["string"]), "get string as []string: %v", data["emptystring"])
-	assert.Equal(t, []string{"4"}, CoerceStrings(data["int"]), "get int as []string: %v", data["emptystring"])
+	assert.Equal(t, []string{"22"}, CoerceStrings(data["string"]), "get string as []string: %v", data["string"])
+	assert.Equal(t, []string{"4"}, CoerceStrings(data["int"]), "get int as []string: %v", data["int"])
+
+	assert.Equal(t, []float64{float64(4)}, CoerceFloats(data["int"]), "get int as []float64: %v", data["int"])
+	assert.Equal(t, []float64{float64(45.3)}, CoerceFloats(data["float"]), "get float as []float64: %v", data["float"])
 }
