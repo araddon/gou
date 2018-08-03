@@ -533,8 +533,9 @@ func DoLog(depth, logLvl int, msg string) {
 }
 
 // LogCtx Low level log with depth , level, message and logger
-func LogCtx(ctx context.Context, depth, logLvl int, msg string) {
+func LogCtx(ctx context.Context, depth, logLvl int, format string, v ...interface{}) {
 	if LogLevel >= logLvl {
+		msg := fmt.Sprintf(format, v...)
 		lc := FromContext(ctx)
 		if len(lc) > 0 {
 			msg = fmt.Sprintf("%s %s", lc, msg)
