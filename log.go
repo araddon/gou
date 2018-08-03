@@ -532,6 +532,17 @@ func DoLog(depth, logLvl int, msg string) {
 	DoLogFields(depth+1, logLvl, msg, nil)
 }
 
+// LogCtx Low level log with depth , level, message and logger
+func LogCtx(ctx context.Context, depth, logLvl int, msg string) {
+	if LogLevel >= logLvl {
+		lc := FromContext(ctx)
+		if len(lc) > 0 {
+			msg = fmt.Sprintf("%s %s", lc, msg)
+		}
+		DoLog(depth+1, logLvl, msg)
+	}
+}
+
 // DoLogFields allows the inclusion of additional context for logrus logs
 // file and line number are included in the fields by default
 func DoLogFields(depth, logLvl int, msg string, fields map[string]interface{}) {
