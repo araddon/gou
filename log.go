@@ -454,6 +454,7 @@ func LogThrottleD(depth, logLvl, limit int, format string, v ...interface{}) {
 	if LogLevel < logLvl {
 		return
 	}
+	doLogThrottle(depth, logLvl, limit, format, fmt.Sprintf(format, v...))
 }
 
 func doLogThrottle(depth, logLvl, limit int, key, msg string) {
