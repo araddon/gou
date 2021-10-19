@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -55,8 +56,18 @@ func CoerceStringShort(v interface{}) string {
 	return val
 }
 
+func castUnderlying(v interface{}, targetType reflect.Type) interface{} {
+	refV := reflect.ValueOf(v)
+	if refV.CanConvert(targetType) {
+		v = refV.Convert(targetType).Interface()
+	}
+	return v
+}
+
 // CoerceStrings Coerce type to strings, will split on comma by default.
 func CoerceStrings(v interface{}) []string {
+	v = castUnderlying(v, reflect.TypeOf([]string{}))
+
 	switch val := v.(type) {
 	case string:
 		if val == "" {
@@ -79,14 +90,19 @@ func CoerceStrings(v interface{}) []string {
 			}
 		}
 		return sva
+	default:
+		return []string{CoerceStringShort(v)}
 	}
-	return []string{CoerceStringShort(v)}
 }
 
 func CoerceFloats(v interface{}) []float64 {
+	v = castUnderlying(v, reflect.TypeOf([]float64{}))
+
 	switch val := v.(type) {
 	case float64:
 		return []float64{val}
+	case []float64:
+		return val
 	case []string:
 		fa := make([]float64, 0)
 		for _, av := range val {
@@ -191,7 +207,11 @@ func CoerceIntShort(v interface{}) int {
 }
 
 func CoerceInts(v interface{}) []int {
+	v = castUnderlying(v, reflect.TypeOf([]int{}))
+
 	switch val := v.(type) {
+	case []int:
+		return val
 	case []string:
 		iva := make([]int, 0)
 		for _, av := range val {
@@ -210,8 +230,9 @@ func CoerceInts(v interface{}) []int {
 			}
 		}
 		return iva
+	default:
+		return []int{CoerceIntShort(v)}
 	}
-	return []int{CoerceIntShort(v)}
 }
 
 // Coerce a val(interface{}) into a Uint64
